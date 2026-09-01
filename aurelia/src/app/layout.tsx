@@ -3,11 +3,8 @@ import { Toaster } from 'react-hot-toast'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import CartDrawer from '@/components/cart/CartDrawer'
-import dynamic from 'next/dynamic'
+import CursorWrapper from '@/components/ui/CursorWrapper'
 import './globals.css'
-
-// Cursor is client-only — load after paint
-const CustomCursor = dynamic(() => import('@/components/ui/CustomCursor'), { ssr: false })
 
 export const metadata: Metadata = {
   title: {
@@ -33,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-[#FAF6F0] antialiased">
         {/* Custom cursor — desktop only, hidden on touch */}
-        <CustomCursor />
+        <CursorWrapper />
         <Navbar />
         <CartDrawer />
         <main>{children}</main>

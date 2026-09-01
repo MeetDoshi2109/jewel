@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
-import { motion, useInView, useScroll, useTransform } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { useMouseParallax } from '@/hooks/useMouseParallax'
 import MarqueeTicker from '@/components/ui/MarqueeTicker'
@@ -20,9 +20,6 @@ export default function PremiumBanner() {
   const textRef = useRef(null)
   const inView = useInView(textRef, { once: true, margin: '-60px' })
 
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] })
-  const imgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%'])
-
   const { x: mx, y: my } = useMouseParallax({ strength: 14 })
 
   return (
@@ -36,9 +33,8 @@ export default function PremiumBanner() {
 
       {/* ── Large gold accent blob ── */}
       <motion.div
-        style={{ x: mx, y: my }}
+        style={{ x: mx, y: my, background: 'radial-gradient(circle, #C9A05B 0%, transparent 65%)' }}
         className="absolute top-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl pointer-events-none opacity-[0.08]"
-        style2={{ background: 'radial-gradient(circle, #C9A05B 0%, transparent 65%)' }}
         aria-hidden="true"
       />
 
