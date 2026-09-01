@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  name        String
+  slug        String   @unique
+  description String
+  price       Float
+  material    String
+  category    String
+  images      String   // JSON array of image URLs
+  stock       Int      @default(0)
+  inStock     Boolean  @default(true)
+  isPremium   Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  isBestseller Boolean @default(false)
+  tags        String   @default("") // JSON array
+  weight      String   @default("")
+  dimensions  String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  reviews     Review[]
+  wishlistItems WishlistItem[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String   @default("")
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+  reviews   Review[]
+  wishlist  WishlistItem[]
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("staff") // "admin" | "staff"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  customerId      String?
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  guestName       String   @default("")
+  guestEmail      String   @default("")
+  guestPhone      String   @default("")
+  type            String   // "online" | "reservation"
+  status          String   @default("placed")
+  // online: placed | confirmed | shipped | delivered | cancelled
+  // reservation: pending_instore | paid_instore | processing | ready_for_pickup | completed | cancelled
+  totalAmount     Float
+  shippingAddress String   @default("") // JSON
+  paymentMethod   String   @default("") // card | upi | wallet | instore
+  paymentStatus   String   @default("pending") // pending | paid | failed
+  
+  // Reservation-specific fields
+  preferredStore  String   @default("")
+  preferredDate   String   @default("")
+  reservationNotes String  @default("")
+  adminNotes      String   @default("")
+  inStorePaymentAmount Float @default(0)
+  inStorePaymentMethod String @default("")
+
+  // Shipping tracking
+  trackingNumber  String   @default("")
+  courierName     String   @default("")
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float   // price at time of order
+  name      String  // product name snapshot
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  authorName String
+  rating     Int      // 1-5
+  title      String   @default("")
+  body       String
+  createdAt  DateTime @default(now())
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, productId])
+}

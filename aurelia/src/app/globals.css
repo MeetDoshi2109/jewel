@@ -1,0 +1,316 @@
+/* ── Google Fonts — MUST precede all rules ─────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Inter:wght@200;300;400;500;600&family=Manrope:wght@300;400;500;600&display=swap');
+
+@import "tailwindcss";
+
+/* ── Design tokens ─────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    --ivory:         #FAF6F0;
+    --ivory-deep:    #F2EBE0;
+    --ivory-mid:     #EDE4D7;
+    --charcoal:      #1C1C1E;
+    --charcoal-soft: #2A2A2C;
+    --charcoal-mid:  #3A3A3C;
+    --gold:          #C9A05B;
+    --gold-light:    #DDB96A;
+    --gold-pale:     #EDD9A3;
+    --gold-dark:     #A8823A;
+    --rose-gold:     #B76E79;
+    --muted:         #8A8A8E;
+    --muted-light:   #AEAEB2;
+    --border:        #E8DDD0;
+    --border-dark:   #D4C5B0;
+    --surface:       #FFFFFF;
+
+    /* Spacing rhythm */
+    --section-y: clamp(5rem, 10vw, 9rem);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--ivory);
+    color: var(--charcoal);
+    font-family: 'Inter', 'Manrope', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.015em;
+    font-weight: 400;
+  }
+
+  ::-webkit-scrollbar              { width: 5px; }
+  ::-webkit-scrollbar-track        { background: var(--ivory); }
+  ::-webkit-scrollbar-thumb        { background: var(--gold); border-radius: 2px; }
+  ::selection                      { background: rgba(201,160,91,0.18); color: var(--charcoal); }
+  :focus-visible                   { outline: 2px solid var(--gold); outline-offset: 3px; }
+}
+
+/* ── Typography utilities ──────────────────────────────────────────── */
+@layer utilities {
+
+  /* Serif */
+  .font-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  /* Display size — big editorial numbers */
+  .text-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(4.5rem, 10vw, 10rem);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    font-weight: 300;
+  }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #C9A05B 0%, #E8C97A 45%, #A8823A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Eyebrow label */
+  .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.625rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  /* ── Gold rule lines ── */
+  .rule-gold {
+    display: block;
+    width: 2.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .rule-gold-center {
+    display: block;
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto;
+  }
+
+  /* ── Animated underline draw (left→right) ── */
+  .underline-anim {
+    position: relative;
+    text-decoration: none;
+  }
+  .underline-anim::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .underline-anim:hover::after { width: 100%; }
+
+  /* ── Noise texture overlay ── */
+  .noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Geometric fine-line texture (engraving motif) ── */
+  .texture-engrave {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M60 4 L116 60 L60 116 L4 60 Z' fill='none' stroke='%23C9A05B' stroke-width='0.3' opacity='0.45'/%3E%3Cpath d='M60 20 L100 60 L60 100 L20 60 Z' fill='none' stroke='%23C9A05B' stroke-width='0.25' opacity='0.3'/%3E%3Ccircle cx='60' cy='60' r='36' fill='none' stroke='%23C9A05B' stroke-width='0.2' opacity='0.25'/%3E%3Ccircle cx='60' cy='60' r='52' fill='none' stroke='%23C9A05B' stroke-width='0.15' opacity='0.18'/%3E%3C/svg%3E");
+  }
+
+  /* ── Marquee ── */
+  .marquee-track {
+    display: flex;
+    gap: 0;
+    animation: marquee 28s linear infinite;
+    will-change: transform;
+    width: max-content;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── Blob drift (gradient mesh) ── */
+  @keyframes blobDrift {
+    0%, 100% { transform: translate(0, 0)      scale(1); }
+    25%       { transform: translate(22px,-18px) scale(1.06); }
+    50%       { transform: translate(-8px, 24px) scale(0.96); }
+    75%       { transform: translate(-20px,-8px) scale(1.03); }
+  }
+  .animate-blob        { animation: blobDrift  9s ease-in-out infinite; }
+  .animate-blob-delay  { animation: blobDrift 12s ease-in-out infinite 2.5s; }
+  .animate-blob-delay2 { animation: blobDrift 15s ease-in-out infinite 5s; }
+
+  /* ── Float ── */
+  @keyframes floatUp {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-14px); }
+  }
+  .animate-float { animation: floatUp 4.5s ease-in-out infinite; }
+
+  /* ── Shine sweep ── */
+  @keyframes shineSweep {
+    0%   { transform: translateX(-150%) skewX(-20deg); opacity: 0; }
+    40%  { opacity: 0.5; }
+    100% { transform: translateX(250%)  skewX(-20deg); opacity: 0; }
+  }
+
+  /* ── Fade rise ── */
+  @keyframes fadeRise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .stagger-child > * {
+    opacity: 0;
+    transform: translateY(22px);
+    animation: fadeRise 0.65s ease forwards;
+  }
+  .stagger-child > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-child > *:nth-child(2) { animation-delay: 0.12s; }
+  .stagger-child > *:nth-child(3) { animation-delay: 0.19s; }
+  .stagger-child > *:nth-child(4) { animation-delay: 0.26s; }
+  .stagger-child > *:nth-child(5) { animation-delay: 0.33s; }
+  .stagger-child > *:nth-child(6) { animation-delay: 0.40s; }
+  .stagger-child > *:nth-child(7) { animation-delay: 0.47s; }
+  .stagger-child > *:nth-child(8) { animation-delay: 0.54s; }
+
+  /* ── Counter shimmer when visible ── */
+  @keyframes counterUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .counter-reveal { animation: counterUp 0.7s ease forwards; }
+
+  /* ── Magnetic CTA ── */
+  .magnetic-btn {
+    will-change: transform;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background-color 0.25s ease;
+  }
+
+  /* ── Fill-sweep button ── */
+  .btn-sweep {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .btn-sweep::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    transform: translateX(-100%);
+    transition: transform 0.38s ease;
+    z-index: -1;
+  }
+  .btn-sweep:hover::before { transform: translateX(0); }
+
+  /* Shine on hover */
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    transform: translateX(-200%) skewX(-20deg);
+    transition: none;
+  }
+  .btn-shine:hover::after {
+    animation: shineSweep 0.7s ease forwards;
+  }
+
+  /* ── Card tilt shadow ── */
+  .card-shadow {
+    transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .card-shadow:hover {
+    box-shadow:
+      0 2px 4px rgba(201,160,91,0.04),
+      0 8px 24px rgba(28,28,30,0.08),
+      0 32px 64px rgba(28,28,30,0.1);
+  }
+
+  /* ── Wishlist heart pop ── */
+  @keyframes heartPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.55); }
+    70%  { transform: scale(0.85); }
+    100% { transform: scale(1); }
+  }
+  .heart-pop { animation: heartPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+  /* ── Image cross-fade on hover ── */
+  .img-crossfade .img-alt {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+  .img-crossfade:hover .img-alt { opacity: 1; }
+  .img-crossfade .img-primary    { transition: opacity 0.45s ease; }
+  .img-crossfade:hover .img-primary { opacity: 0; }
+
+  /* ── Nav underline draw ── */
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0;
+    width: 0; height: 1px;
+    background: var(--gold);
+    transition: width 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .nav-link:hover::after,
+  .nav-link[aria-current="page"]::after { width: 100%; }
+
+  /* ── Scrollbar product strips ── */
+  .slim-scroll::-webkit-scrollbar        { height: 2px; width: 2px; }
+  .slim-scroll::-webkit-scrollbar-thumb  { background: var(--gold); border-radius: 1px; }
+
+  /* ── Section divider — thin gold line ── */
+  .divider-gold {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-dark) 30%, var(--border-dark) 70%, transparent);
+  }
+
+  /* focus-visible */
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+}
+
+/* ── Global reduced-motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1     !important;
+    transition-duration:       0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float, .animate-blob,
+  .animate-blob-delay, .animate-blob-delay2,
+  .marquee-track { animation: none !important; }
+}
+
+/* ── Admin helpers ────────────────────────────────────────────────── */
+.admin-row:hover { background-color: #f9fafb; }
