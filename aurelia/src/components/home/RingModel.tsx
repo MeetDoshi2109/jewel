@@ -1,263 +1,242 @@
 'use client'
 
-import { useRef, Suspense, useEffect, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Environment, Float, OrbitControls, useProgress } from '@react-three/drei'
+import { useRef, Suspense } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Environment, Float } from '@react-three/drei'
 import * as THREE from 'three'
-import { Rhino3dmLoader } from 'three/examples/jsm/loaders/3DMLoader.js'
 
 // ─────────────────────────────────────────────────────────────────
-// Loading progress overlay
+// Shared gold material
 // ─────────────────────────────────────────────────────────────────
-function LoadingOverlay() {
-  const { progress, active } = useProgress()
+const goldMat = new THREE.MeshPhysicalMaterial({
+  color:              new THREE.Color('#C9A05B'),
+  metalness:          0.97,
+  roughness:          0.04,
+  envMapIntensity:    2.4,
+  clearcoat:          0.4,
+  clearcoatRoughness: 0.08,
+  reflectivity:       1,
+})
 
-  if (!active) return null
+const gemMat = new THREE.MeshPhysicalMaterial({
+  color:           new THREE.Color('#E8DDD0'),
+  metalness:       0.05,
+  roughness:       0.0,
+  transmission:    0.92,
+  thickness:       0.5,
+  envMapIntensity: 3.5,
+  transparent:     true,
+  opacity:         0.88,
+})
 
-  return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF6F0]/80 backdrop-blur-sm rounded-full z-10">
-      {/* Circular progress ring */}
-      <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90">
-        <circle
-          cx="40" cy="40" r="34"
-          fill="none" stroke="#E8DDD0" strokeWidth="3"
-        />
-        <circle
-          cx="40" cy="40" r="34"
-          fill="none" stroke="#C9A05B" strokeWidth="3"
-          strokeDasharray={`${2 * Math.PI * 34}`}
-          strokeDashoffset={`${2 * Math.PI * 34 * (1 - progress / 100)}`}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.4s ease' }}
-        />
-      </svg>
-      <p className="absolute font-serif text-sm text-[#C9A05B] tabular-nums">
-        {Math.round(progress)}%
-      </p>
-      <p className="mt-4 text-[10px] tracking-[0.3em] uppercase text-[#8A8A8E]">
-        Loading model
-      </p>
-    </div>
-  )
-}
+const roseGoldMat = new THREE.MeshPhysicalMaterial({
+  color:           new THREE.Color('#B76E79'),
+  metalness:       0.96,
+  roughness:       0.06,
+  envMapIntensity: 2.0,
+  clearcoat:       0.3,
+})
 
 // ─────────────────────────────────────────────────────────────────
-// The actual Rhino 3DM chain model
+// Procedural jewellery piece: ornate pendant + chain links
 // ─────────────────────────────────────────────────────────────────
-function ChainModel({ scrollProgress }: { scrollProgress: number }) {
-  const groupRef = useRef<THREE.Group>(null)
-  const [model, setModel] = useState<THREE.Object3D | null>(null)
-  const [error, setError] = useState(false)
-  const { scene } = useThree()
+function JewelleryPiece({ scrollProgress = 0 }: { scrollProgress?: number }) {
+  const groupRef   = useRef<THREE.Group>(null)
+  const pendantRef = useRef<THREE.Group>(null)
 
-  // Load the .3dm file using Rhino3dmLoader
-  useEffect(() => {
-    const loader = new Rhino3dmLoader()
-    // Use locally served rhino3dm wasm (no CDN dependency)
-    loader.setLibraryPath('/rhino3dm/')
-
-    loader.load(
-      '/models/chain.3dm',
-      (object: THREE.Object3D) => {
-        // Rhino uses Z-up; Three.js uses Y-up — rotate -90° on X
-        object.rotation.x = -Math.PI / 2
-
-        // Auto-scale to fit the canvas viewport
-        const box = new THREE.Box3().setFromObject(object)
-        const size = new THREE.Vector3()
-        box.getSize(size)
-        const maxDim = Math.max(size.x, size.y, size.z)
-        const scale = 2.2 / maxDim
-        object.scale.setScalar(scale)
-
-        // Centre the model at origin
-        const centre = new THREE.Vector3()
-        box.getCenter(centre)
-        object.position.sub(centre.multiplyScalar(scale))
-
-        // Apply gold material to every mesh
-        object.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            const mesh = child as THREE.Mesh
-            mesh.material = new THREE.MeshPhysicalMaterial({
-              color:            new THREE.Color('#C9A05B'),
-              metalness:        0.96,
-              roughness:        0.06,
-              envMapIntensity:  2.0,
-              reflectivity:     1.0,
-              clearcoat:        0.3,
-              clearcoatRoughness: 0.1,
-            })
-            mesh.castShadow    = true
-            mesh.receiveShadow = true
-          }
-        })
-
-        setModel(object)
-      },
-      (_xhr: ProgressEvent) => {
-        // progress handled by useProgress()
-      },
-      (_err: unknown) => {
-        console.warn('3DM load failed, falling back to procedural model')
-        setError(true)
-      }
-    )
-
-    return () => { loader.dispose?.() }
-  }, [scene])
-
-  // Animate: auto-rotate + scroll-driven Y rotation
   useFrame((_, delta) => {
     if (!groupRef.current) return
 
-    // Gentle auto Y-rotation
-    groupRef.current.rotation.y += delta * 0.35
+    // Base auto-rotation
+    groupRef.current.rotation.y += delta * 0.38
 
-    // Scroll drives an extra full spin (0→1 = 0→360°)
-    // We layer this on top of the auto-rotation via a separate offset
-    groupRef.current.userData.scrollAngle = scrollProgress * Math.PI * 2
+    // Scroll drives an additional rotation — full turn over one hero viewport
+    groupRef.current.rotation.z = scrollProgress * Math.PI * 1.8
 
     // Gentle breathing tilt
-    groupRef.current.rotation.z = Math.sin(Date.now() * 0.0004) * 0.08
+    const t = Date.now() * 0.0005
+    groupRef.current.rotation.x = Math.sin(t) * 0.08
+
+    // Pendant slight sway
+    if (pendantRef.current) {
+      pendantRef.current.rotation.z = Math.sin(t * 0.7) * 0.06
+    }
   })
 
-  // Fallback procedural model if .3dm fails to load
-  if (error) return <ProceduralChain scrollProgress={scrollProgress} />
+  // Chain links — drape from top to bottom
+  const LINK_COUNT = 14
+  const LINK_RADIUS = 0.13
+  const TUBE_RADIUS = 0.028
+  const SPACING     = 0.30
+
+  const links = Array.from({ length: LINK_COUNT }, (_, i) => {
+    const t = i / (LINK_COUNT - 1)
+    return {
+      y:    0.9 - i * SPACING,
+      rotY: i % 2 === 0 ? 0 : Math.PI / 2,   // interlocking orientation
+      scale: 1 - t * 0.12,                    // links taper slightly downward
+    }
+  })
+
+  // Pendant geometry: layered circles + centre gem
+  const GEM_POSITIONS: [number, number, number][] = [
+    [0, 0, 0],           // centre
+    [0.22, 0, 0],        // right
+    [-0.22, 0, 0],       // left
+    [0, 0.22, 0],        // top
+    [0, -0.22, 0],       // bottom
+    [0.155, 0.155, 0],   // diagonals
+    [-0.155, 0.155, 0],
+    [0.155, -0.155, 0],
+    [-0.155, -0.155, 0],
+  ]
 
   return (
     <group ref={groupRef}>
-      {model && <primitive object={model} />}
-    </group>
-  )
-}
 
-// ─────────────────────────────────────────────────────────────────
-// Procedural chain fallback (renders if .3dm fails)
-// ─────────────────────────────────────────────────────────────────
-function ProceduralChain({ scrollProgress }: { scrollProgress: number }) {
-  const groupRef = useRef<THREE.Group>(null)
-
-  const goldMat = new THREE.MeshPhysicalMaterial({
-    color:           new THREE.Color('#C9A05B'),
-    metalness:       0.97,
-    roughness:       0.04,
-    envMapIntensity: 2.2,
-    clearcoat:       0.4,
-  })
-
-  // Generate torus links along a curved path
-  const linkCount  = 22
-  const linkRadius = 0.18   // radius of link ring
-  const tubeRadius = 0.038  // thickness of wire
-  const spacing    = 0.42   // distance between link centres
-
-  const links = Array.from({ length: linkCount }, (_, i) => {
-    const t = i / (linkCount - 1)
-    // Slight S-curve drape
-    const x = (i - linkCount / 2) * spacing
-    const y = -Math.sin(t * Math.PI) * 0.5
-    const z = 0
-    // Alternate link orientation (90° rotated) for interlocking look
-    const rotY = i % 2 === 0 ? 0 : Math.PI / 2
-    return { x, y, z, rotY }
-  })
-
-  useFrame((_, delta) => {
-    if (!groupRef.current) return
-    groupRef.current.rotation.y += delta * 0.4
-    groupRef.current.rotation.x = -Math.PI / 2 + Math.sin(Date.now() * 0.0005) * 0.06
-    // Scroll-driven extra rotation
-    groupRef.current.rotation.z = scrollProgress * Math.PI * 2 * 0.3
-  })
-
-  return (
-    <group ref={groupRef}>
-      {links.map((link, i) => (
+      {/* ── Chain ── */}
+      {links.map((l, i) => (
         <mesh
           key={i}
-          position={[link.x, link.y, link.z]}
-          rotation={[0, link.rotY, 0]}
+          position={[0, l.y, 0]}
+          rotation={[0, l.rotY, 0]}
+          scale={[l.scale, l.scale, l.scale]}
           material={goldMat}
           castShadow
         >
-          <torusGeometry args={[linkRadius, tubeRadius, 18, 36]} />
+          <torusGeometry args={[LINK_RADIUS, TUBE_RADIUS, 16, 32]} />
         </mesh>
       ))}
+
+      {/* ── Pendant bail (clasp at top of pendant) ── */}
+      <mesh position={[0, 0.9 - LINK_COUNT * SPACING + 0.02, 0]} material={goldMat} castShadow>
+        <torusGeometry args={[0.09, 0.025, 12, 24]} />
+      </mesh>
+
+      {/* ── Pendant body ── */}
+      <group
+        ref={pendantRef}
+        position={[0, 0.9 - LINK_COUNT * SPACING - 0.18, 0]}
+      >
+        {/* Outer decorative ring */}
+        <mesh material={goldMat} castShadow>
+          <torusGeometry args={[0.46, 0.035, 20, 64]} />
+        </mesh>
+
+        {/* Inner decorative ring */}
+        <mesh material={goldMat} castShadow>
+          <torusGeometry args={[0.32, 0.022, 16, 48]} />
+        </mesh>
+
+        {/* 6 prong arms radiating from centre */}
+        {[0, 1, 2, 3, 4, 5].map(i => {
+          const angle = (i / 6) * Math.PI * 2
+          return (
+            <mesh
+              key={i}
+              position={[Math.cos(angle) * 0.22, Math.sin(angle) * 0.22, 0]}
+              rotation={[0, 0, angle]}
+              material={goldMat}
+              castShadow
+            >
+              <cylinderGeometry args={[0.014, 0.014, 0.44, 8]} />
+            </mesh>
+          )
+        })}
+
+        {/* Rose-gold accent ring */}
+        <mesh material={roseGoldMat} castShadow>
+          <torusGeometry args={[0.24, 0.015, 12, 48]} />
+        </mesh>
+
+        {/* Gemstone cluster */}
+        {GEM_POSITIONS.map(([x, y, z], i) => (
+          <mesh
+            key={i}
+            position={[x, y, z + 0.04]}
+            material={i === 0 ? gemMat : goldMat}
+            castShadow
+          >
+            <octahedronGeometry args={[i === 0 ? 0.11 : 0.055, 1]} />
+          </mesh>
+        ))}
+
+        {/* Centre solitaire prongs */}
+        {[0, 1, 2, 3].map(i => {
+          const a = (i / 4) * Math.PI * 2 + Math.PI / 4
+          return (
+            <mesh
+              key={i}
+              position={[Math.cos(a) * 0.09, Math.sin(a) * 0.09, 0.05]}
+              material={goldMat}
+            >
+              <cylinderGeometry args={[0.012, 0.012, 0.18, 6]} />
+            </mesh>
+          )
+        })}
+
+        {/* Decorative edge dots */}
+        {Array.from({ length: 16 }, (_, i) => {
+          const a = (i / 16) * Math.PI * 2
+          return (
+            <mesh
+              key={i}
+              position={[Math.cos(a) * 0.46, Math.sin(a) * 0.46, 0]}
+              material={goldMat}
+            >
+              <sphereGeometry args={[0.022, 8, 8]} />
+            </mesh>
+          )
+        })}
+      </group>
+
     </group>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Environment + lighting setup
+// Lighting rig
 // ─────────────────────────────────────────────────────────────────
 function Lighting() {
   return (
     <>
-      {/* Key light — warm */}
-      <directionalLight
-        position={[4, 6, 4]}
-        intensity={1.8}
-        color="#FFF8F0"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-      />
-      {/* Fill — cool rim */}
-      <directionalLight position={[-4, 2, -4]} intensity={0.6} color="#E8F0FF" />
-      {/* Bottom bounce */}
-      <directionalLight position={[0, -3, 2]} intensity={0.3} color="#DDB96A" />
-      {/* Ambient */}
       <ambientLight intensity={0.35} color="#FAF6F0" />
-      {/* Gold point light to create specular flare */}
-      <pointLight position={[0, 2, 2]} intensity={1.2} color="#C9A05B" />
+      <directionalLight position={[4, 6, 4]}  intensity={1.8} color="#FFF8F0" castShadow
+        shadow-mapSize={[1024, 1024]} />
+      <directionalLight position={[-4, 2, -4]} intensity={0.6} color="#E8F0FF" />
+      <directionalLight position={[0, -3, 2]}  intensity={0.3} color="#DDB96A" />
+      <pointLight position={[0, 2, 2]}  intensity={1.2} color="#C9A05B" />
+      <pointLight position={[2, -1, 1]} intensity={0.5} color="#B76E79" />
     </>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Exported canvas component
+// Exported canvas
 // ─────────────────────────────────────────────────────────────────
-interface Props {
-  scrollProgress?: number
-}
-
-export default function RingCanvas({ scrollProgress = 0 }: Props) {
+export default function RingCanvas({ scrollProgress = 0 }: { scrollProgress?: number }) {
   return (
-    <div className="relative w-full h-full" aria-label="3D chain model — turn by scrolling">
-      {/* HTML loading overlay rendered outside Canvas */}
-      <LoadingOverlay />
-
+    <div className="w-full h-full" aria-hidden="true">
       <Canvas
-        camera={{ position: [0, 0, 4.5], fov: 38 }}
-        dpr={[1, Math.min(window.devicePixelRatio, 2)]}
+        camera={{ position: [0, 0, 4.2], fov: 40 }}
+        dpr={[1, 2]}
         gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance',
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
+          antialias:             true,
+          alpha:                 true,
+          powerPreference:       'high-performance',
+          toneMapping:           THREE.ACESFilmicToneMapping,
+          toneMappingExposure:   1.25,
         }}
         shadows
         style={{ background: 'transparent' }}
       >
         <Lighting />
-
         <Suspense fallback={null}>
           <Environment preset="studio" />
-          <Float speed={1.2} rotationIntensity={0.15} floatIntensity={0.3}>
-            <ChainModel scrollProgress={scrollProgress} />
+          <Float speed={1.3} rotationIntensity={0.18} floatIntensity={0.35}>
+            <JewelleryPiece scrollProgress={scrollProgress} />
           </Float>
         </Suspense>
-
-        {/* Orbit controls — disabled auto-rotate so we control it manually */}
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          enableRotate={true}
-          minPolarAngle={Math.PI / 3}
-          maxPolarAngle={Math.PI * 2 / 3}
-          rotateSpeed={0.4}
-        />
       </Canvas>
     </div>
   )
