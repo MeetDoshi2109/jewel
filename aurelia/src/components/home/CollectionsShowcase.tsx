@@ -7,15 +7,52 @@ import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { CATEGORIES } from '@/lib/utils'
 
-const categoryImages: Record<string, { src: string; accent: string }> = {
-  rings:       { src: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80', accent: '#C9A05B' },
-  necklaces:   { src: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80', accent: '#B76E79' },
-  earrings:    { src: 'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=800&q=80', accent: '#C9A05B' },
-  bangles:     { src: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80', accent: '#A8823A' },
-  mangalsutra: { src: 'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=800&q=80', accent: '#C9A05B' },
-  anklets:     { src: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=800&q=80', accent: '#B76E79' },
-  nosepins:    { src: 'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=800&q=80', accent: '#C9A05B' },
-  mens:        { src: 'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=800&q=80', accent: '#8A8A8E' },
+// ─────────────────────────────────────────────────────────────────
+// All images: Unsplash License — free for commercial use
+// https://unsplash.com/license
+// Images are curated to match each category's visual identity.
+// ─────────────────────────────────────────────────────────────────
+const categoryImages: Record<string, { src: string; hover: string; accent: string }> = {
+  rings: {
+    src:   'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1589674781759-c21c37956a44?w=900&q=85',
+    accent: '#C9A05B',
+  },
+  necklaces: {
+    src:   'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&q=85',
+    accent: '#B76E79',
+  },
+  earrings: {
+    src:   'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
+    accent: '#C9A05B',
+  },
+  bangles: {
+    src:   'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=900&q=85',
+    accent: '#A8823A',
+  },
+  mangalsutra: {
+    src:   'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=900&q=85',
+    accent: '#C9A05B',
+  },
+  anklets: {
+    src:   'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1573047836021-1f9c8fb5fe6a?w=900&q=85',
+    accent: '#B76E79',
+  },
+  nosepins: {
+    src:   'https://images.unsplash.com/photo-1601121141418-e44a9d85a1c4?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1588444650733-d0f4715b7f3b?w=900&q=85',
+    accent: '#C9A05B',
+  },
+  mens: {
+    src:   'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?w=900&q=85',
+    accent: '#8A8A8E',
+  },
 }
 
 /* Layout config: first card is hero-tall, rest are uniform */
@@ -40,7 +77,8 @@ function CategoryCard({
   layout: typeof LAYOUTS[0]
 }) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const { src, accent } = categoryImages[category.value] || { src: categoryImages.rings.src, accent: '#C9A05B' }
+  const { src, hover, accent } = categoryImages[category.value] || categoryImages.rings
+  const [hovered, setHovered] = useState(false)
 
   /* Per-card 3D tilt */
   const rawX = useMotionValue(0)
@@ -54,7 +92,7 @@ function CategoryCard({
     rawX.set(((e.clientY - rect.top)  / rect.height - 0.5) * -10)
     rawY.set(((e.clientX - rect.left) / rect.width  - 0.5) *  10)
   }
-  const onLeave = () => { rawX.set(0); rawY.set(0) }
+  const onLeave = () => { rawX.set(0); rawY.set(0); setHovered(false) }
 
   return (
     <motion.div
@@ -75,13 +113,22 @@ function CategoryCard({
           style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: 'preserve-3d', transformPerspective: 900 }}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
+          onMouseEnter={() => setHovered(true)}
         >
-          {/* Image */}
+          {/* Primary image */}
           <Image
             src={src}
             alt={category.label}
             fill
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+            className={`object-cover transition-all duration-700 ease-out group-hover:scale-[1.06] ${hovered ? 'opacity-0' : 'opacity-100'}`}
+            sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,33vw"
+          />
+          {/* Hover image cross-fade */}
+          <Image
+            src={hover}
+            alt={`${category.label} alternate`}
+            fill
+            className={`object-cover absolute inset-0 transition-all duration-700 ease-out group-hover:scale-[1.06] ${hovered ? 'opacity-100' : 'opacity-0'}`}
             sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,33vw"
           />
 

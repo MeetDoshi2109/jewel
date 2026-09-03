@@ -170,7 +170,7 @@ export default function HeroSection() {
         {/* ── Background parallax image ── */}
         <motion.div className="absolute inset-0 z-0" style={{ y: bgY }}>
           <Image
-            src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=1920&q=75"
+            src="https://images.unsplash.com/photo-1603217192634-61068e4d4bf9?w=1920&q=75"
             alt=""
             fill
             className="object-cover opacity-[0.11]"
@@ -309,13 +309,17 @@ export default function HeroSection() {
                 style={{ x: imgX, y: imgY }}
               >
                 <Image
-                  src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80"
-                  alt="Aurelia necklace"
+                  src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=500&q=85"
+                  alt="Aurelia gold necklace"
                   fill
                   className="object-cover"
                   sizes="176px"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/25 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/30 to-transparent" />
+                {/* Tiny label */}
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-[9px] tracking-[0.18em] uppercase text-white/70">Gold Necklace</p>
+                </div>
               </motion.div>
 
               {/* Second floating accent image */}
@@ -327,24 +331,36 @@ export default function HeroSection() {
                 }}
               >
                 <Image
-                  src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=300&q=80"
-                  alt="Aurelia bangle"
+                  src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=400&q=85"
+                  alt="Aurelia bangles"
                   fill
                   className="object-cover"
                   sizes="144px"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/40 to-transparent" />
+                <div className="absolute bottom-2 left-2 right-2">
+                  <p className="text-[9px] tracking-[0.18em] uppercase text-white/70">Bangles</p>
+                </div>
               </motion.div>
 
-              {/* 3D Ring canvas */}
-              <div className="relative w-[300px] h-[300px] md:w-[420px] md:h-[420px] z-20">
+              {/* 3D Chain canvas */}
+              <div className="relative w-[300px] h-[300px] md:w-[440px] md:h-[440px] z-20">
                 {canvasReady ? (
                   <RingCanvas scrollProgress={scrollProg} />
                 ) : (
+                  /* Static skeleton while idle callback fires */
                   <div className="w-full h-full flex items-center justify-center">
-                    <div className="relative w-44 h-44 animate-float">
-                      <div className="absolute inset-0 rounded-full border-2 border-[#C9A05B]/25" />
-                      <div className="absolute inset-8 rounded-full border border-[#C9A05B]/15" />
-                      <div className="absolute inset-16 rounded-full bg-[#C9A05B]/08" />
+                    <div className="relative w-48 h-48 animate-float">
+                      {[0, 1, 2].map(i => (
+                        <div
+                          key={i}
+                          className="absolute inset-0 rounded-full border border-[#C9A05B]/20"
+                          style={{ transform: `scale(${1 - i * 0.25})` }}
+                        />
+                      ))}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-3 h-3 rounded-full bg-[#C9A05B]/30 animate-pulse" />
+                      </div>
                     </div>
                   </div>
                 )}

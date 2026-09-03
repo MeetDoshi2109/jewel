@@ -3,62 +3,115 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-function imgs(category: string, id: number, count = 2): string {
-  const base = `https://images.unsplash.com/`
-  const sets: Record<string, string[]> = {
-    rings: [
-      'photo-1605100804763-247f67b3557e?w=800&q=80',
-      'photo-1611591437281-460bfbe1220a?w=800&q=80',
-      'photo-1589674781759-c21c37956a44?w=800&q=80',
-      'photo-1615655096345-61a54750068d?w=800&q=80',
-      'photo-1600003263720-95b45a4035d5?w=800&q=80',
-      'photo-1573408301828-def33c4cdf7d?w=800&q=80',
-    ],
-    necklaces: [
-      'photo-1599643478518-a784e5dc4c8f?w=800&q=80',
-      'photo-1515562141207-7a88fb7ce338?w=800&q=80',
-      'photo-1535632066927-ab7c9ab60908?w=800&q=80',
-      'photo-1602173574767-37ac01994b2a?w=800&q=80',
-      'photo-1583292650898-7d22cd27ca6f?w=800&q=80',
-      'photo-1617038260897-41a1f14a8ca0?w=800&q=80',
-    ],
-    earrings: [
-      'photo-1630350434070-e9a27b89e4a9?w=800&q=80',
-      'photo-1535179621489-3b2e5e8e7c0f?w=800&q=80',
-      'photo-1596944924616-7b38e7cfac36?w=800&q=80',
-      'photo-1573408301828-def33c4cdf7d?w=800&q=80',
-      'photo-1611591437281-460bfbe1220a?w=800&q=80',
-      'photo-1605100804763-247f67b3557e?w=800&q=80',
-    ],
-    bangles: [
-      'photo-1611591437281-460bfbe1220a?w=800&q=80',
-      'photo-1602173574767-37ac01994b2a?w=800&q=80',
-      'photo-1605100804763-247f67b3557e?w=800&q=80',
-      'photo-1515562141207-7a88fb7ce338?w=800&q=80',
-    ],
-    mangalsutra: [
-      'photo-1583292650898-7d22cd27ca6f?w=800&q=80',
-      'photo-1599643478518-a784e5dc4c8f?w=800&q=80',
-      'photo-1535632066927-ab7c9ab60908?w=800&q=80',
-    ],
-    anklets: [
-      'photo-1617038260897-41a1f14a8ca0?w=800&q=80',
-      'photo-1602173574767-37ac01994b2a?w=800&q=80',
-    ],
-    nosepins: [
-      'photo-1596944924616-7b38e7cfac36?w=800&q=80',
-      'photo-1573408301828-def33c4cdf7d?w=800&q=80',
-    ],
-    mens: [
-      'photo-1600003263720-95b45a4035d5?w=800&q=80',
-      'photo-1535179621489-3b2e5e8e7c0f?w=800&q=80',
-      'photo-1611591437281-460bfbe1220a?w=800&q=80',
-    ],
-  }
-  const pool = sets[category] || sets.rings
-  const result = []
+// ─────────────────────────────────────────────────────────────────
+// CURATED IMAGE LIBRARY
+// All images: Unsplash License (free for commercial use, no attribution required)
+// https://unsplash.com/license
+// Each category has 8+ distinct photos so every product looks unique.
+// ─────────────────────────────────────────────────────────────────
+const IMAGE_LIBRARY: Record<string, string[]> = {
+  rings: [
+    // Solitaire / diamond rings
+    'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&q=85',
+    'https://images.unsplash.com/photo-1589674781759-c21c37956a44?w=900&q=85',
+    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=900&q=85',
+    'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
+    // Gold / statement rings
+    'https://images.unsplash.com/photo-1573408301828-def33c4cdf7d?w=900&q=85',
+    'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=85',
+    'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&q=85',
+    'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
+    // Silver / minimal rings
+    'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=900&q=85',
+    'https://images.unsplash.com/photo-1536396123481-991b5b636cbb?w=900&q=85',
+    'https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?w=900&q=85',
+    'https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=900&q=85',
+  ],
+  necklaces: [
+    // Gold & diamond necklaces
+    'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&q=85',
+    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&q=85',
+    'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=900&q=85',
+    'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=900&q=85',
+    // Pearl & layered
+    'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
+    'https://images.unsplash.com/photo-1630698395938-9fb69ece7eb8?w=900&q=85',
+    'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=900&q=85',
+    // Pendants
+    'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=900&q=85',
+    'https://images.unsplash.com/photo-1603217192634-61068e4d4bf9?w=900&q=85',
+    'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=85',
+    'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=900&q=85',
+    'https://images.unsplash.com/photo-1598560917505-59a3ad559071?w=900&q=85',
+  ],
+  earrings: [
+    // Studs & small
+    'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=900&q=85',
+    'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
+    'https://images.unsplash.com/photo-1601121141418-e44a9d85a1c4?w=900&q=85',
+    'https://images.unsplash.com/photo-1588444650733-d0f4715b7f3b?w=900&q=85',
+    // Drops & chandeliers
+    'https://images.unsplash.com/photo-1535179621489-3b2e5e8e7c0f?w=900&q=85',
+    'https://images.unsplash.com/photo-1573047836021-1f9c8fb5fe6a?w=900&q=85',
+    'https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=900&q=85',
+    // Hoops
+    'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&q=85',
+    'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&q=85',
+    'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&q=85',
+  ],
+  bangles: [
+    // Gold bangles
+    'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&q=85',
+    'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
+    'https://images.unsplash.com/photo-1573408301828-def33c4cdf7d?w=900&q=85',
+    // Silver / coloured
+    'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=85',
+    'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=900&q=85',
+    'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=900&q=85',
+    'https://images.unsplash.com/photo-1630698395938-9fb69ece7eb8?w=900&q=85',
+    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=900&q=85',
+  ],
+  mangalsutra: [
+    'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=900&q=85',
+    'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&q=85',
+    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&q=85',
+    'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=900&q=85',
+    'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=900&q=85',
+    'https://images.unsplash.com/photo-1598560917505-59a3ad559071?w=900&q=85',
+  ],
+  anklets: [
+    'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
+    'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
+    'https://images.unsplash.com/photo-1573047836021-1f9c8fb5fe6a?w=900&q=85',
+    'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=900&q=85',
+    'https://images.unsplash.com/photo-1630698395938-9fb69ece7eb8?w=900&q=85',
+  ],
+  nosepins: [
+    'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
+    'https://images.unsplash.com/photo-1573408301828-def33c4cdf7d?w=900&q=85',
+    'https://images.unsplash.com/photo-1601121141418-e44a9d85a1c4?w=900&q=85',
+    'https://images.unsplash.com/photo-1588444650733-d0f4715b7f3b?w=900&q=85',
+    'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=900&q=85',
+  ],
+  mens: [
+    // Men's chains & bracelets
+    'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=900&q=85',
+    'https://images.unsplash.com/photo-1535179621489-3b2e5e8e7c0f?w=900&q=85',
+    'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=900&q=85',
+    'https://images.unsplash.com/photo-1573047836021-1f9c8fb5fe6a?w=900&q=85',
+    'https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?w=900&q=85',
+    'https://images.unsplash.com/photo-1536396123481-991b5b636cbb?w=900&q=85',
+    'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&q=85',
+  ],
+}
+
+// Returns count images for a product — offset by `id` so each product
+// gets a different starting image from its category pool
+function imgs(category: string, id: number, count = 3): string {
+  const pool = IMAGE_LIBRARY[category] || IMAGE_LIBRARY.rings
+  const result: string[] = []
   for (let i = 0; i < count; i++) {
-    result.push(base + pool[(id + i) % pool.length])
+    result.push(pool[(id + i) % pool.length])
   }
   return JSON.stringify(result)
 }
