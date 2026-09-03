@@ -24,13 +24,13 @@ const categoryImages: Record<string, { src: string; hover: string; accent: strin
     accent: '#B76E79',
   },
   earrings: {
-    src:   'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=900&q=85',
+    src:   'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&q=85',
     hover: 'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
     accent: '#C9A05B',
   },
   bangles: {
     src:   'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
     accent: '#A8823A',
   },
   mangalsutra: {
@@ -40,17 +40,17 @@ const categoryImages: Record<string, { src: string; hover: string; accent: strin
   },
   anklets: {
     src:   'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1573047836021-1f9c8fb5fe6a?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
     accent: '#B76E79',
   },
   nosepins: {
-    src:   'https://images.unsplash.com/photo-1601121141418-e44a9d85a1c4?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1588444650733-d0f4715b7f3b?w=900&q=85',
+    src:   'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=900&q=85',
     accent: '#C9A05B',
   },
   mens: {
     src:   'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?w=900&q=85',
+    hover: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=85',
     accent: '#8A8A8E',
   },
 }

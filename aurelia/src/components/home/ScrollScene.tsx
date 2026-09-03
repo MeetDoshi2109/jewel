@@ -286,7 +286,7 @@ interface CollectionCard {
 const SCENE3_CARDS: CollectionCard[] = [
   { category: 'rings',     label: 'Rings',      image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=700&q=85', count: '18 pieces' },
   { category: 'necklaces', label: 'Necklaces',  image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=700&q=85', count: '18 pieces' },
-  { category: 'earrings',  label: 'Earrings',   image: 'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=700&q=85', count: '18 pieces' },
+  { category: 'earrings',  label: 'Earrings',   image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=700&q=85', count: '18 pieces' },
   { category: 'bangles',   label: 'Bangles',    image: 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=700&q=85', count: '15 pieces' },
   { category: 'mens',      label: "Men's",      image: 'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=700&q=85', count: '9 pieces'  },
 ]
@@ -446,7 +446,7 @@ function Scene4() {
       <div className="relative overflow-hidden min-h-64 lg:min-h-0">
         <div ref={imageRef} className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1573408301828-def33c4cdf7d?w=900&q=80"
+            src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=80"
             alt="Aurelia artisan setting a gemstone by hand"
             fill
             className="object-cover"

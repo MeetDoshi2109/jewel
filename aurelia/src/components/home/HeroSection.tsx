@@ -170,7 +170,7 @@ export default function HeroSection() {
         {/* ── Background parallax image ── */}
         <motion.div className="absolute inset-0 z-0" style={{ y: bgY }}>
           <Image
-            src="https://images.unsplash.com/photo-1603217192634-61068e4d4bf9?w=1920&q=75"
+            src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=75"
             alt=""
             fill
             className="object-cover opacity-[0.11]"

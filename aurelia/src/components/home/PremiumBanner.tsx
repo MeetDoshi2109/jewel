@@ -12,7 +12,7 @@ const PREMIUM_ITEMS = [
   { label: 'Diamond Rings',       price: 'from ₹14,999', img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500&q=80' },
   { label: 'Gold Necklaces',      price: 'from ₹12,500', img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&q=80' },
   { label: 'Kundan Chokers',      price: 'from ₹24,000', img: 'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=500&q=80' },
-  { label: 'Diamond Earrings',    price: 'from ₹12,999', img: 'https://images.unsplash.com/photo-1630350434070-e9a27b89e4a9?w=500&q=80' },
+  { label: 'Diamond Earrings',    price: 'from ₹12,999', img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500&q=80' },
 ]
 
 export default function PremiumBanner() {
