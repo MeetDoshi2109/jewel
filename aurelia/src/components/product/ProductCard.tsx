@@ -24,7 +24,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
   const { addItem } = useCartStore()
 
   const images = product.images || []
-  const primaryImg = images[0] || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80'
+  const primaryImg = images[0] || '/images/2ring.jpg'
   const secondaryImg = images[1] || primaryImg
 
   // 3D tilt on hover (desktop only)

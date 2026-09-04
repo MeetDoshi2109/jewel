@@ -55,7 +55,7 @@ export default function BrandStory() {
         <div className="relative overflow-hidden min-h-[50vh] lg:min-h-0">
           <motion.div className="absolute inset-0" style={{ y: imgY }}>
             <Image
-              src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1000&q=80"
+              src="/images/necklace.jpg"
               alt="Aurelia artisan crafting jewellery by hand"
               fill
               className="object-cover"

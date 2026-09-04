@@ -1,12 +1,9 @@
 'use client'
 
-import { useEffect, useRef, Suspense } from 'react'
+import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { motion } from 'framer-motion'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { Environment, Float } from '@react-three/drei'
-import * as THREE from 'three'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
@@ -15,128 +12,8 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
-// ─── Shared scroll progress ref (GSAP writes → R3F reads each frame) ─
-const scrollAngleRef = { current: 0 }
-
 // ─────────────────────────────────────────────────────────────────────
-// Procedural jewellery model — scroll-driven rotation
-// ─────────────────────────────────────────────────────────────────────
-const goldMat = new THREE.MeshPhysicalMaterial({
-  color:              new THREE.Color('#C9A05B'),
-  metalness:          0.97,
-  roughness:          0.04,
-  envMapIntensity:    2.4,
-  clearcoat:          0.4,
-  clearcoatRoughness: 0.08,
-})
-
-const gemMat = new THREE.MeshPhysicalMaterial({
-  color:        new THREE.Color('#E8DDD0'),
-  metalness:    0.05,
-  roughness:    0.0,
-  transmission: 0.92,
-  thickness:    0.5,
-  envMapIntensity: 3.5,
-  transparent:  true,
-  opacity:      0.88,
-})
-
-const roseGoldMat = new THREE.MeshPhysicalMaterial({
-  color:           new THREE.Color('#B76E79'),
-  metalness:       0.96,
-  roughness:       0.06,
-  envMapIntensity: 2.0,
-  clearcoat:       0.3,
-})
-
-function ScrollPiece() {
-  const groupRef = useRef<THREE.Group>(null)
-
-  useFrame((_, delta) => {
-    if (!groupRef.current) return
-    // Gentle auto-rotation
-    groupRef.current.rotation.y += delta * 0.3
-    // Scroll drives a full Z rotation (so it really feels like "turning the piece")
-    groupRef.current.rotation.z = scrollAngleRef.current
-    // Soft X breathing
-    groupRef.current.rotation.x = Math.sin(Date.now() * 0.0005) * 0.07
-  })
-
-  // Chain links
-  const LINKS = Array.from({ length: 16 }, (_, i) => ({
-    y:    0.95 - i * 0.27,
-    rotY: i % 2 === 0 ? 0 : Math.PI / 2,
-    s:    1 - i * 0.01,
-  }))
-
-  // Pendant gem positions
-  const GEM_POS: [number, number, number][] = [
-    [0,     0,    0],
-    [0.22,  0,    0], [-0.22, 0,    0],
-    [0,     0.22, 0], [0,    -0.22, 0],
-    [0.155, 0.155, 0], [-0.155, 0.155, 0],
-    [0.155,-0.155, 0], [-0.155,-0.155, 0],
-  ]
-
-  const pendantY = 0.95 - 16 * 0.27 - 0.22
-
-  return (
-    <group ref={groupRef}>
-      {/* Chain */}
-      {LINKS.map((l, i) => (
-        <mesh key={i} position={[0, l.y, 0]} rotation={[0, l.rotY, 0]}
-          scale={[l.s, l.s, l.s]} material={goldMat} castShadow>
-          <torusGeometry args={[0.13, 0.028, 16, 32]} />
-        </mesh>
-      ))}
-
-      {/* Bail */}
-      <mesh position={[0, pendantY + 0.18, 0]} material={goldMat} castShadow>
-        <torusGeometry args={[0.09, 0.025, 12, 24]} />
-      </mesh>
-
-      {/* Pendant */}
-      <group position={[0, pendantY, 0]}>
-        <mesh material={goldMat} castShadow><torusGeometry args={[0.46, 0.035, 20, 64]} /></mesh>
-        <mesh material={goldMat} castShadow><torusGeometry args={[0.32, 0.022, 16, 48]} /></mesh>
-        <mesh material={roseGoldMat} castShadow><torusGeometry args={[0.24, 0.015, 12, 48]} /></mesh>
-
-        {/* Spokes */}
-        {[0,1,2,3,4,5].map(i => {
-          const a = (i / 6) * Math.PI * 2
-          return (
-            <mesh key={i} position={[Math.cos(a)*0.22, Math.sin(a)*0.22, 0]}
-              rotation={[0, 0, a]} material={goldMat} castShadow>
-              <cylinderGeometry args={[0.014, 0.014, 0.44, 8]} />
-            </mesh>
-          )
-        })}
-
-        {/* Gem cluster */}
-        {GEM_POS.map(([x, y, z], i) => (
-          <mesh key={i} position={[x, y, z + 0.04]}
-            material={i === 0 ? gemMat : goldMat} castShadow>
-            <octahedronGeometry args={[i === 0 ? 0.11 : 0.055, 1]} />
-          </mesh>
-        ))}
-
-        {/* Edge beads */}
-        {Array.from({ length: 16 }, (_, i) => {
-          const a = (i / 16) * Math.PI * 2
-          return (
-            <mesh key={i} position={[Math.cos(a)*0.46, Math.sin(a)*0.46, 0]}
-              material={goldMat}>
-              <sphereGeometry args={[0.022, 8, 8]} />
-            </mesh>
-          )
-        })}
-      </group>
-    </group>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Scene 2 — "Turn the piece" — GSAP scroll → R3F rotation
+// Scene 2 — "The Craft" — video showcase with scroll-driven callout tags
 // ─────────────────────────────────────────────────────────────────────
 function Scene2() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -160,8 +37,6 @@ function Scene2() {
           pin: true,
           anticipatePin: 1,
           onUpdate: (self) => {
-            // Write to shared ref — R3F reads it every frame
-            scrollAngleRef.current = self.progress * Math.PI * 2
             if (progressRef.current) {
               progressRef.current.style.width = `${self.progress * 100}%`
             }
@@ -182,7 +57,7 @@ function Scene2() {
   return (
     <div
       ref={containerRef}
-      className="relative h-screen bg-[#FAF6F0] overflow-hidden flex items-center justify-center"
+      className="relative h-screen bg-white overflow-hidden flex items-center justify-center"
     >
       {/* Fine texture */}
       <div className="absolute inset-0 opacity-[0.025] texture-engrave pointer-events-none" aria-hidden="true" />
@@ -194,42 +69,26 @@ function Scene2() {
         aria-hidden="true"
       />
 
-      {/* ── 3D canvas — full viewport ── */}
-      <div className="absolute inset-0 z-10" aria-label="Procedural jewellery pendant — scroll to turn it">
-        <Canvas
-          camera={{ position: [0, 0, 5.2], fov: 38 }}
-          dpr={[1, 2]}
-          gl={{
-            antialias:           true,
-            alpha:               true,
-            toneMapping:         THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.2,
-          }}
-          shadows
-          style={{ background: 'transparent' }}
-        >
-          <ambientLight intensity={0.35} color="#FAF6F0" />
-          <directionalLight position={[4, 6, 4]}  intensity={1.8} color="#FFF8F0" castShadow />
-          <directionalLight position={[-4, 2, -4]} intensity={0.6} color="#E8F0FF" />
-          <pointLight position={[0, 2, 2]} intensity={1.2} color="#C9A05B" />
-          <pointLight position={[2,-1, 1]} intensity={0.4} color="#B76E79" />
-
-          <Suspense fallback={null}>
-            <Environment preset="studio" />
-            <Float speed={1.0} rotationIntensity={0.1} floatIntensity={0.18}>
-              <ScrollPiece />
-            </Float>
-          </Suspense>
-        </Canvas>
+      {/* ── Video — centred, contained ── */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center" aria-label="Gold ring rotating showcase">
+        <video
+          src="/gold-ring-rotate.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-full w-full object-contain"
+          style={{ maxHeight: '80vh', maxWidth: '80vw' }}
+        />
       </div>
 
       {/* ── Header ── */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 text-center z-20 pointer-events-none">
         <p className="eyebrow text-[#C9A05B] mb-2">The Craft</p>
         <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] text-[#1C1C1E] leading-tight">
-          Turn the piece.
+          Crafted to perfection.
         </h2>
-        <p className="text-xs text-[#8A8A8E] tracking-widest mt-2">↓ Scroll to rotate</p>
+        <p className="text-xs text-[#8A8A8E] tracking-widest mt-2">↓ Scroll to explore</p>
       </div>
 
       {/* ── Floating callout tags ── */}
@@ -284,11 +143,11 @@ interface CollectionCard {
 }
 
 const SCENE3_CARDS: CollectionCard[] = [
-  { category: 'rings',     label: 'Rings',      image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=700&q=85', count: '18 pieces' },
-  { category: 'necklaces', label: 'Necklaces',  image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=700&q=85', count: '18 pieces' },
-  { category: 'earrings',  label: 'Earrings',   image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=700&q=85', count: '18 pieces' },
-  { category: 'bangles',   label: 'Bangles',    image: 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=700&q=85', count: '15 pieces' },
-  { category: 'mens',      label: "Men's",      image: 'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=700&q=85', count: '9 pieces'  },
+  { category: 'rings',     label: 'Rings',      image: '/images/2ring.jpg',      count: '18 pieces' },
+  { category: 'necklaces', label: 'Necklaces',  image: '/images/necklace.jpg',   count: '18 pieces' },
+  { category: 'earrings',  label: 'Earrings',   image: '/images/5.jpg',          count: '18 pieces' },
+  { category: 'bangles',   label: 'Bangles',    image: '/images/6.jpg',          count: '15 pieces' },
+  { category: 'mens',      label: "Men's",      image: '/images/7.jpg',          count: '9 pieces'  },
 ]
 
 function TiltCard({ card, index }: { card: CollectionCard; index: number }) {
@@ -446,7 +305,7 @@ function Scene4() {
       <div className="relative overflow-hidden min-h-64 lg:min-h-0">
         <div ref={imageRef} className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=80"
+            src="/images/mangalsutra.jpg"
             alt="Aurelia artisan setting a gemstone by hand"
             fill
             className="object-cover"

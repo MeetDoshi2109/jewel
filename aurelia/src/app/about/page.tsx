@@ -14,7 +14,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="relative h-[60vh] bg-[#1C1C1E] flex items-center justify-center overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=1800&q=80"
+          src="/images/mangalsutra.jpg"
           alt="Aurelia jewellery atelier"
           fill className="object-cover opacity-40"
         />
@@ -40,7 +40,7 @@ export default function AboutPage() {
           </div>
           <div className="aspect-square relative rounded-2xl overflow-hidden">
             <Image
-              src="https://images.unsplash.com/photo-1615655096345-61a54750068d?w=600&q=80"
+              src="/images/necklace.jpg"
               alt="Aurelia founders at their Jaipur workshop"
               fill className="object-cover"
             />

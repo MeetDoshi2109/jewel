@@ -1,22 +1,20 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
-import { motion, useScroll, useTransform, useSpring, useMotionValue, AnimatePresence } from 'framer-motion'
-import dynamic from 'next/dynamic'
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  AnimatePresence,
+  type Variants,
+} from 'framer-motion'
 import ParticleCanvas from '@/components/ui/ParticleCanvas'
 import MarqueeTicker from '@/components/ui/MarqueeTicker'
-
-const RingCanvas = dynamic(() => import('./RingModel'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="w-32 h-32 rounded-full border border-[#C9A05B]/20 animate-pulse" />
-    </div>
-  ),
-})
 
 /* ── Magnetic link hook ── */
 function useMagnetic(strength = 22) {
@@ -35,12 +33,13 @@ function useMagnetic(strength = 22) {
     const onLeave = () => { el.style.transform = '' }
     el.addEventListener('mousemove', onMove)
     el.addEventListener('mouseleave', onLeave)
-    return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave) }
+    return () => {
+      el.removeEventListener('mousemove', onMove)
+      el.removeEventListener('mouseleave', onLeave)
+    }
   }, [strength])
   return ref
 }
-
-const WORDS = ['Timeless.', 'Radiant.', 'Yours.']
 
 /* ── Animated counter ── */
 function Counter({ end, suffix = '' }: { end: number; suffix?: string }) {
@@ -64,18 +63,216 @@ function Counter({ end, suffix = '' }: { end: number; suffix?: string }) {
   return <span ref={ref}>{count}{suffix}</span>
 }
 
+/* ── Slide data ── */
+const SLIDES = [
+  {
+    src: '/hero-slides/slide-1.jpg',
+    alt: 'Aurelia signature jewellery piece',
+    label: 'Signature Collection',
+    sub: '18k Gold · Handcrafted',
+  },
+  {
+    src: '/hero-slides/slide-2.jpg',
+    alt: 'Diamond leaf necklace displayed',
+    label: 'Diamond Leaf Necklace',
+    sub: 'Conflict-Free Stones',
+  },
+  {
+    src: '/hero-slides/slide-3.jpg',
+    alt: 'Diamond leaf necklace on pedestal',
+    label: 'Atelier Showcase',
+    sub: 'Jaipur Atelier · Est. 2009',
+  },
+  {
+    src: '/hero-slides/slide-4.jpg',
+    alt: 'Diamond leaf necklace resting',
+    label: 'Crafted to Last',
+    sub: '15+ Years of Craft',
+  },
+]
+
+const WORDS = ['Timeless.', 'Radiant.', 'Yours.']
+
+/* ── Slide variants ── */
+const slideVariants: Variants = {
+  enter: (dir: number) => ({
+    x: dir > 0 ? '100%' : '-100%',
+    opacity: 0,
+    scale: 1.04,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.85, ease: [0.32, 0.72, 0, 1] },
+  },
+  exit: (dir: number) => ({
+    x: dir > 0 ? '-40%' : '40%',
+    opacity: 0,
+    scale: 0.96,
+    transition: { duration: 0.65, ease: [0.32, 0.72, 0, 1] },
+  }),
+}
+
+const captionVariants: Variants = {
+  enter:  { opacity: 0, y: 18 },
+  center: { opacity: 1, y: 0,  transition: { duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  exit:   { opacity: 0, y: -10, transition: { duration: 0.25 } },
+}
+
+/* ── HeroSlideshow ── */
+function HeroSlideshow() {
+  const [[activeIdx, dir], setSlide] = useState([0, 1])
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const go = useCallback((next: number) => {
+    setSlide(([cur]) => {
+      const d = next > cur ? 1 : -1
+      return [((next % SLIDES.length) + SLIDES.length) % SLIDES.length, d]
+    })
+  }, [])
+
+  const next = useCallback(() => go(activeIdx + 1), [activeIdx, go])
+  const prev = useCallback(() => go(activeIdx - 1), [activeIdx, go])
+
+  /* auto-advance every 5 s */
+  useEffect(() => {
+    timerRef.current = setTimeout(next, 5000)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [activeIdx, next])
+
+  return (
+    <div className="relative w-full h-full rounded-3xl overflow-hidden group select-none">
+
+      {/* ── Slides ── */}
+      <AnimatePresence initial={false} custom={dir}>
+        <motion.div
+          key={activeIdx}
+          custom={dir}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          className="absolute inset-0"
+        >
+          <Image
+            src={SLIDES[activeIdx].src}
+            alt={SLIDES[activeIdx].alt}
+            fill
+            className="object-cover"
+            sizes="(max-width:1024px) 100vw, 55vw"
+            priority={activeIdx === 0}
+          />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/70 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1C1C1E]/10 to-transparent" />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* ── Ken-Burns shimmer overlay ── */}
+      <div
+        className="absolute inset-0 pointer-events-none z-10"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(201,160,91,0.06) 0%, transparent 60%)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Caption ── */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`caption-${activeIdx}`}
+          variants={captionVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-7 pt-12"
+        >
+          <p className="text-[9px] tracking-[0.22em] uppercase text-[#C9A05B] mb-1">
+            {SLIDES[activeIdx].sub}
+          </p>
+          <p className="font-serif text-xl text-white leading-tight">
+            {SLIDES[activeIdx].label}
+          </p>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* ── Dot indicators ── */}
+      <div className="absolute bottom-5 right-6 z-20 flex items-center gap-2">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => go(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className="group/dot relative flex items-center justify-center w-5 h-5"
+          >
+            <span
+              className="block rounded-full transition-all duration-500"
+              style={{
+                width:   i === activeIdx ? 20 : 6,
+                height:  6,
+                background: i === activeIdx ? '#C9A05B' : 'rgba(255,255,255,0.4)',
+              }}
+            />
+          </button>
+        ))}
+      </div>
+
+      {/* ── Prev / Next arrows (visible on hover) ── */}
+      <button
+        onClick={prev}
+        aria-label="Previous slide"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 hover:bg-white/30 transition-all duration-300"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      <button
+        onClick={next}
+        aria-label="Next slide"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 hover:bg-white/30 transition-all duration-300"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M4.5 2L8.5 6L4.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {/* ── Thin gold progress bar ── */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/10 z-20">
+        <motion.div
+          key={activeIdx}
+          className="h-full bg-[#C9A05B]"
+          initial={{ width: '0%' }}
+          animate={{ width: '100%' }}
+          transition={{ duration: 5, ease: 'linear' }}
+        />
+      </div>
+
+      {/* ── Slide counter ── */}
+      <div className="absolute top-4 right-5 z-20">
+        <span className="text-[10px] tracking-[0.18em] text-white/50 font-light tabular-nums">
+          {String(activeIdx + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   HERO SECTION
+══════════════════════════════════════════════════════════════════════ */
 export default function HeroSection() {
-  const [wordIdx, setWordIdx]       = useState(0)
-  const [canvasReady, setCanvasReady] = useState(false)
-  const [scrollProg, setScrollProg] = useState(0)
-  const magRef = useMagnetic(24)
+  const [wordIdx, setWordIdx] = useState(0)
   const heroRef = useRef<HTMLDivElement>(null)
+  const magRef  = useMagnetic(24)
 
   /* scroll parallax */
   const { scrollY } = useScroll()
-  const bgY      = useTransform(scrollY, [0, 700], ['0%', '22%'])
-  const fadeOut  = useTransform(scrollY, [0, 420], [1, 0])
-  const textUp   = useTransform(scrollY, [0, 420], ['0%', '14%'])
+  const bgY     = useTransform(scrollY, [0, 700], ['0%', '22%'])
+  const fadeOut = useTransform(scrollY, [0, 420], [1, 0])
+  const textUp  = useTransform(scrollY, [0, 420], ['0%', '14%'])
 
   /* mouse-driven spotlight */
   const rawMX = useMotionValue(0.5)
@@ -83,34 +280,10 @@ export default function HeroSection() {
   const spotX = useSpring(rawMX, { stiffness: 80, damping: 18 })
   const spotY = useSpring(rawMY, { stiffness: 80, damping: 18 })
 
-  /* floating image parallax */
-  const imgRawX = useMotionValue(0)
-  const imgRawY = useMotionValue(0)
-  const imgX = useSpring(imgRawX, { stiffness: 60, damping: 14 })
-  const imgY = useSpring(imgRawY, { stiffness: 60, damping: 14 })
-
   /* word cycle */
   useEffect(() => {
     const id = setInterval(() => setWordIdx(i => (i + 1) % WORDS.length), 2800)
     return () => clearInterval(id)
-  }, [])
-
-  /* idle callback for 3D canvas */
-  useEffect(() => {
-    const id = (window as Window & typeof globalThis & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback
-      ? (window as Window & typeof globalThis & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback!(() => setCanvasReady(true), { timeout: 2000 })
-      : setTimeout(() => setCanvasReady(true), 700)
-    return () => { if (typeof id === 'number') clearTimeout(id) }
-  }, [])
-
-  /* scroll progress for ring */
-  useEffect(() => {
-    const fn = () => {
-      if (!heroRef.current) return
-      setScrollProg(Math.min(window.scrollY / heroRef.current.offsetHeight, 1))
-    }
-    window.addEventListener('scroll', fn, { passive: true })
-    return () => window.removeEventListener('scroll', fn)
   }, [])
 
   /* mouse tracking */
@@ -118,8 +291,6 @@ export default function HeroSection() {
     const fn = (e: MouseEvent) => {
       rawMX.set(e.clientX / window.innerWidth)
       rawMY.set(e.clientY / window.innerHeight)
-      imgRawX.set((e.clientX / window.innerWidth  - 0.5) * 18)
-      imgRawY.set((e.clientY / window.innerHeight - 0.5) * 18)
     }
     window.addEventListener('mousemove', fn, { passive: true })
     return () => window.removeEventListener('mousemove', fn)
@@ -128,15 +299,12 @@ export default function HeroSection() {
 
   return (
     <>
-      {/* ═══════════════════════════════════════════════════════════════
-          HERO SECTION
-      ═══════════════════════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════ HERO ═════ */}
       <section
         ref={heroRef}
         className="relative min-h-screen flex flex-col overflow-hidden bg-[#FAF6F0]"
       >
-
-        {/* ── Mouse-reactive radial spotlight ── */}
+        {/* ── Mouse spotlight ── */}
         <motion.div
           className="absolute inset-0 pointer-events-none z-[2]"
           style={{
@@ -149,20 +317,18 @@ export default function HeroSection() {
           aria-hidden="true"
         />
 
-        {/* ── Animated blob gradients ── */}
+        {/* ── Animated blobs ── */}
         <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
           <div className="absolute w-[50vw] h-[50vw] rounded-full blur-3xl animate-blob"
             style={{ background: 'radial-gradient(circle, rgba(201,160,91,0.14) 0%, transparent 70%)', top: '-10%', left: '-8%' }} />
           <div className="absolute w-[40vw] h-[40vw] rounded-full blur-3xl animate-blob-delay"
             style={{ background: 'radial-gradient(circle, rgba(183,110,121,0.10) 0%, transparent 70%)', top: '30%', right: '-5%' }} />
-          <div className="absolute w-[35vw] h-[35vw] rounded-full blur-3xl animate-blob-delay2"
-            style={{ background: 'radial-gradient(circle, rgba(221,185,106,0.10) 0%, transparent 70%)', bottom: '5%', left: '30%' }} />
         </div>
 
-        {/* ── Fine engraving texture ── */}
+        {/* ── Texture ── */}
         <div className="absolute inset-0 z-[1] opacity-[0.028] pointer-events-none texture-engrave" aria-hidden="true" />
 
-        {/* ── Particle layer ── */}
+        {/* ── Particles ── */}
         <div className="absolute inset-0 z-[3] pointer-events-none">
           <ParticleCanvas particleCount={50} />
         </div>
@@ -170,10 +336,10 @@ export default function HeroSection() {
         {/* ── Background parallax image ── */}
         <motion.div className="absolute inset-0 z-0" style={{ y: bgY }}>
           <Image
-            src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=75"
+            src="/images/3.jpg"
             alt=""
             fill
-            className="object-cover opacity-[0.11]"
+            className="object-cover opacity-[0.07]"
             priority
             sizes="100vw"
           />
@@ -182,14 +348,14 @@ export default function HeroSection() {
 
         {/* ── CONTENT GRID ── */}
         <div className="relative z-20 flex-1 flex items-center w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-center w-full min-h-screen py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-6 items-center w-full min-h-screen py-32">
 
-            {/* ── LEFT TEXT ── col 1–6 */}
+            {/* ── LEFT TEXT ── col 1–5 */}
             <motion.div
-              className="lg:col-span-6 xl:col-span-5 order-2 lg:order-1"
+              className="lg:col-span-6 order-2 lg:order-1"
               style={{ y: textUp, opacity: fadeOut }}
             >
-              {/* Top label */}
+              {/* Label */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -200,7 +366,7 @@ export default function HeroSection() {
                 <span className="eyebrow">New Collection · 2026</span>
               </motion.div>
 
-              {/* Headline — line 1 */}
+              {/* Headline line 1 */}
               <div className="overflow-hidden">
                 <motion.h1
                   initial={{ y: 100 }}
@@ -213,7 +379,7 @@ export default function HeroSection() {
               </div>
 
               {/* Animated word */}
-              <div className="overflow-hidden h-[1.05em] relative my-1">
+              <div className="overflow-hidden relative my-1" style={{ height: 'calc(clamp(3.8rem, 7.5vw, 7rem) * 1.05)' }}>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={wordIdx}
@@ -221,14 +387,14 @@ export default function HeroSection() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -70, opacity: 0 }}
                     transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
-                    className="font-serif text-[clamp(3.8rem,7.5vw,7rem)] leading-[0.92] tracking-[-0.03em] italic text-gold-gradient"
+                    className="absolute inset-0 font-serif text-[clamp(3.8rem,7.5vw,7rem)] leading-[0.92] tracking-[-0.03em] italic text-gold-gradient"
                   >
                     {WORDS[wordIdx]}
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* Sub-headline */}
+              {/* Sub */}
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -266,7 +432,7 @@ export default function HeroSection() {
                 </Link>
               </motion.div>
 
-              {/* Stats strip */}
+              {/* Stats */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -274,8 +440,8 @@ export default function HeroSection() {
                 className="flex items-center gap-10 pt-8 border-t border-[#E8DDD0]"
               >
                 {[
-                  { end: 100, suffix: '+', label: 'Pieces' },
-                  { end: 15,  suffix: '+', label: 'Years of craft' },
+                  { end: 100, suffix: '+',  label: 'Pieces'          },
+                  { end: 15,  suffix: '+',  label: 'Years of craft'  },
                   { end: 50,  suffix: 'K+', label: 'Happy customers' },
                 ].map(s => (
                   <div key={s.label}>
@@ -288,116 +454,48 @@ export default function HeroSection() {
               </motion.div>
             </motion.div>
 
-            {/* ── RIGHT — 3D ring + floating image ── col 7–12 */}
+            {/* ── RIGHT — slideshow ── col 6–12 */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.1, delay: 0.3 }}
-              className="lg:col-span-6 xl:col-span-7 order-1 lg:order-2 relative flex items-center justify-center h-[55vw] max-h-[680px] min-h-[340px]"
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-6 order-1 lg:order-2 relative"
             >
-              {/* Back glow */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div
-                  className="w-[65%] h-[65%] rounded-full blur-3xl animate-blob opacity-30"
-                  style={{ background: 'radial-gradient(circle, #C9A05B 0%, transparent 70%)' }}
-                />
+              {/* Main slideshow card */}
+              <div className="relative w-full aspect-[3/4] max-h-[560px]">
+                <HeroSlideshow />
+
+                {/* Floating badge — top-left */}
+                <motion.div
+                  initial={{ opacity: 0, y: -16, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 1.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute -top-4 -left-4 lg:-left-6 z-30 bg-white/90 backdrop-blur-md border border-[#E8DDD0] rounded-2xl px-4 py-3 shadow-xl"
+                >
+                  <p className="eyebrow text-[#C9A05B] mb-0.5">Est. 2009</p>
+                  <p className="font-serif text-sm text-[#1C1C1E]">Jaipur Atelier</p>
+                </motion.div>
+
+                {/* Floating tag — bottom-right pull-out */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute -bottom-5 -right-4 lg:-right-6 z-30 bg-[#1C1C1E] rounded-2xl px-5 py-3 shadow-xl"
+                >
+                  <p className="text-[9px] tracking-[0.2em] uppercase text-[#C9A05B] mb-0.5">Handcrafted</p>
+                  <p className="font-serif text-sm text-white">18k Gold · Diamond</p>
+                </motion.div>
               </div>
 
-              {/* Floating editorial image — mouse-tracked */}
+              {/* Decorative vertical rule */}
               <motion.div
-                className="absolute top-[8%] right-[5%] w-32 md:w-44 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl z-10"
-                style={{ x: imgX, y: imgY }}
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=500&q=85"
-                  alt="Aurelia gold necklace"
-                  fill
-                  className="object-cover"
-                  sizes="176px"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/30 to-transparent" />
-                {/* Tiny label */}
-                <div className="absolute bottom-3 left-3 right-3">
-                  <p className="text-[9px] tracking-[0.18em] uppercase text-white/70">Gold Necklace</p>
-                </div>
-              </motion.div>
-
-              {/* Second floating accent image */}
-              <motion.div
-                className="absolute bottom-[10%] left-[3%] w-24 md:w-36 aspect-square rounded-xl overflow-hidden shadow-xl z-10"
-                style={{
-                  x: useTransform(imgX, v => -v * 0.6),
-                  y: useTransform(imgY, v => v  * 0.5),
-                }}
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=400&q=85"
-                  alt="Aurelia bangles"
-                  fill
-                  className="object-cover"
-                  sizes="144px"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/40 to-transparent" />
-                <div className="absolute bottom-2 left-2 right-2">
-                  <p className="text-[9px] tracking-[0.18em] uppercase text-white/70">Bangles</p>
-                </div>
-              </motion.div>
-
-              {/* 3D Chain canvas */}
-              <div className="relative w-[300px] h-[300px] md:w-[440px] md:h-[440px] z-20">
-                {canvasReady ? (
-                  <RingCanvas scrollProgress={scrollProg} />
-                ) : (
-                  /* Static skeleton while idle callback fires */
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="relative w-48 h-48 animate-float">
-                      {[0, 1, 2].map(i => (
-                        <div
-                          key={i}
-                          className="absolute inset-0 rounded-full border border-[#C9A05B]/20"
-                          style={{ transform: `scale(${1 - i * 0.25})` }}
-                        />
-                      ))}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-3 h-3 rounded-full bg-[#C9A05B]/30 animate-pulse" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Orbiting particles */}
-                {[0, 1, 2, 3, 4, 5].map(i => (
-                  <motion.div
-                    key={i}
-                    className="absolute inset-0 pointer-events-none"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20 + i * 4, repeat: Infinity, ease: 'linear', delay: i }}
-                    style={{ transformOrigin: 'center' }}
-                  >
-                    <div
-                      className="absolute rounded-full bg-[#C9A05B]"
-                      style={{
-                        width:  i % 2 === 0 ? 5 : 3,
-                        height: i % 2 === 0 ? 5 : 3,
-                        top: '50%', left: '50%',
-                        transform: `rotate(${(i / 6) * 360}deg) translateX(${135 + i * 14}px) translateY(-50%)`,
-                        opacity: 0.3 + i * 0.06,
-                      }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Bottom-left badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 1.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-6 right-8 md:right-14 bg-white/80 backdrop-blur-md border border-[#E8DDD0] rounded-2xl px-4 py-3 shadow-lg z-20"
-              >
-                <p className="eyebrow text-[#C9A05B] mb-0.5">Est. 2009</p>
-                <p className="font-serif text-sm text-[#1C1C1E]">Jaipur Atelier</p>
-              </motion.div>
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ delay: 0.8, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                className="hidden lg:block absolute -left-8 top-[15%] bottom-[15%] w-[1px] bg-gradient-to-b from-transparent via-[#C9A05B]/30 to-transparent origin-top"
+                aria-hidden="true"
+              />
             </motion.div>
 
           </div>
@@ -414,10 +512,9 @@ export default function HeroSection() {
           <div className="w-[1px] h-10 bg-gradient-to-b from-[#C9A05B] to-transparent" />
           <span className="eyebrow text-[#8A8A8E]">Scroll</span>
         </motion.div>
-
       </section>
 
-      {/* ── Marquee ticker below hero ── */}
+      {/* ── Marquee ticker ── */}
       <MarqueeTicker />
     </>
   )

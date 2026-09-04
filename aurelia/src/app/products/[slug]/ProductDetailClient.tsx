@@ -41,7 +41,7 @@ export default function ProductDetailClient({ product, related }: Props) {
   const isWishlisted = has(product.id)
 
   const images = product.images?.length ? product.images : [
-    'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80',
+    '/images/2ring.jpg',
   ]
 
   const avgRating = product.reviews?.length

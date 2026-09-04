@@ -14,43 +14,43 @@ import { CATEGORIES } from '@/lib/utils'
 // ─────────────────────────────────────────────────────────────────
 const categoryImages: Record<string, { src: string; hover: string; accent: string }> = {
   rings: {
-    src:   'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1589674781759-c21c37956a44?w=900&q=85',
+    src:    '/images/2ring.jpg',
+    hover:  '/images/4.jpg',
     accent: '#C9A05B',
   },
   necklaces: {
-    src:   'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&q=85',
+    src:    '/images/necklace.jpg',
+    hover:  '/images/3.jpg',
     accent: '#B76E79',
   },
   earrings: {
-    src:   'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
+    src:    '/images/5.jpg',
+    hover:  '/images/6.jpg',
     accent: '#C9A05B',
   },
   bangles: {
-    src:   'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=900&q=85',
+    src:    '/images/6.jpg',
+    hover:  '/images/7.jpg',
     accent: '#A8823A',
   },
   mangalsutra: {
-    src:   'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=900&q=85',
+    src:    '/images/mangalsutra.jpg',
+    hover:  '/images/necklace.jpg',
     accent: '#C9A05B',
   },
   anklets: {
-    src:   'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=900&q=85',
+    src:    '/images/8.jpg',
+    hover:  '/images/9.jpg',
     accent: '#B76E79',
   },
   nosepins: {
-    src:   'https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=900&q=85',
+    src:    '/images/9.jpg',
+    hover:  '/images/2.webp',
     accent: '#C9A05B',
   },
   mens: {
-    src:   'https://images.unsplash.com/photo-1600003263720-95b45a4035d5?w=900&q=85',
-    hover: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=900&q=85',
+    src:    '/images/7.jpg',
+    hover:  '/images/8.jpg',
     accent: '#8A8A8E',
   },
 }
