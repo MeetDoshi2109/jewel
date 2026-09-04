@@ -51,7 +51,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1 aspect-square relative rounded-2xl overflow-hidden">
             <Image
-              src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80"
+              src="/images/3.jpg"
               alt="Aurelia artisan at work"
               fill className="object-cover"
             />
