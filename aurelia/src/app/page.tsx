@@ -10,33 +10,41 @@ import PremiumBanner      from '@/components/home/PremiumBanner'
 import { Product } from '@/types'
 
 async function getFeaturedProducts() {
-  const rows = await prisma.product.findMany({
-    where: { isFeatured: true, inStock: true },
-    take: 8,
-    orderBy: { isBestseller: 'desc' },
-  })
-  return rows.map(p => ({
-    ...p,
-    images: JSON.parse(p.images || '[]'),
-    tags:   JSON.parse(p.tags   || '[]'),
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-  })) as Product[]
+  try {
+    const rows = await prisma.product.findMany({
+      where: { isFeatured: true, inStock: true },
+      take: 8,
+      orderBy: { isBestseller: 'desc' },
+    })
+    return rows.map(p => ({
+      ...p,
+      images: JSON.parse(p.images || '[]'),
+      tags:   JSON.parse(p.tags   || '[]'),
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    })) as Product[]
+  } catch {
+    return [] as Product[]
+  }
 }
 
 async function getBestsellers() {
-  const rows = await prisma.product.findMany({
-    where: { isBestseller: true, inStock: true },
-    take: 8,
-    orderBy: { price: 'asc' },
-  })
-  return rows.map(p => ({
-    ...p,
-    images: JSON.parse(p.images || '[]'),
-    tags:   JSON.parse(p.tags   || '[]'),
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-  })) as Product[]
+  try {
+    const rows = await prisma.product.findMany({
+      where: { isBestseller: true, inStock: true },
+      take: 8,
+      orderBy: { price: 'asc' },
+    })
+    return rows.map(p => ({
+      ...p,
+      images: JSON.parse(p.images || '[]'),
+      tags:   JSON.parse(p.tags   || '[]'),
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    })) as Product[]
+  } catch {
+    return [] as Product[]
+  }
 }
 
 export default async function HomePage() {
