@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
+  try {
   const { searchParams } = req.nextUrl
   const category = searchParams.get('category')
   const q = searchParams.get('q')
@@ -68,4 +69,7 @@ export async function GET(req: NextRequest) {
   }))
 
   return NextResponse.json({ products: serialized, total, page, pages: Math.ceil(total / limit) })
+  } catch {
+    return NextResponse.json({ products: [], total: 0, page: 1, pages: 0 })
+  }
 }

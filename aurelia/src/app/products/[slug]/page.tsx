@@ -5,51 +5,59 @@ import { Product } from '@/types'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const product = await prisma.product.findUnique({ where: { slug } })
-  if (!product) return {}
-  return {
-    title: product.name,
-    description: product.description.slice(0, 160),
+  try {
+    const product = await prisma.product.findUnique({ where: { slug } })
+    if (!product) return {}
+    return {
+      title: product.name,
+      description: product.description.slice(0, 160),
+    }
+  } catch {
+    return {}
   }
 }
 
 async function getProduct(slug: string) {
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      reviews: {
-        orderBy: { createdAt: 'desc' },
-        include: { customer: { select: { name: true } } },
+  try {
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      include: {
+        reviews: {
+          orderBy: { createdAt: 'desc' },
+          include: { customer: { select: { name: true } } },
+        },
       },
-    },
-  })
-  if (!product) return null
+    })
+    if (!product) return null
 
-  const related = await prisma.product.findMany({
-    where: { category: product.category, id: { not: product.id }, inStock: true },
-    take: 4,
-    orderBy: { isBestseller: 'desc' },
-  })
+    const related = await prisma.product.findMany({
+      where: { category: product.category, id: { not: product.id }, inStock: true },
+      take: 4,
+      orderBy: { isBestseller: 'desc' },
+    })
 
-  return {
-    product: {
-      ...product,
-      images: JSON.parse(product.images || '[]') as string[],
-      tags: JSON.parse(product.tags || '[]') as string[],
-      createdAt: product.createdAt.toISOString(),
-      updatedAt: product.updatedAt.toISOString(),
-      reviews: product.reviews.map((r) => ({
+    return {
+      product: {
+        ...product,
+        images: JSON.parse(product.images || '[]') as string[],
+        tags: JSON.parse(product.tags || '[]') as string[],
+        createdAt: product.createdAt.toISOString(),
+        updatedAt: product.updatedAt.toISOString(),
+        reviews: product.reviews.map((r) => ({
+          ...r,
+          createdAt: r.createdAt.toISOString(),
+        })),
+      } as unknown as Product & { reviews: typeof product.reviews },
+      related: related.map((r) => ({
         ...r,
+        images: JSON.parse(r.images || '[]'),
+        tags: JSON.parse(r.tags || '[]'),
         createdAt: r.createdAt.toISOString(),
-      })),
-    } as unknown as Product & { reviews: typeof product.reviews },
-    related: related.map((r) => ({
-      ...r,
-      images: JSON.parse(r.images || '[]'),
-      tags: JSON.parse(r.tags || '[]'),
-      createdAt: r.createdAt.toISOString(),
-      updatedAt: r.updatedAt.toISOString(),
-    })) as Product[],
+        updatedAt: r.updatedAt.toISOString(),
+      })) as Product[],
+    }
+  } catch {
+    return null
   }
 }
 
