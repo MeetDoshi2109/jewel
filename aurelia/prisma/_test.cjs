@@ -1,5 +1,0 @@
-const { PrismaClient } = require('@prisma/client')
-const p = new PrismaClient()
-p.product.count()
-  .then(c => { console.log('Products in DB:', c); return p.$disconnect(); })
-  .catch(e => { console.error('Connection error:', e.message); process.exit(1); })
