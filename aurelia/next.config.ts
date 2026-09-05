@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Silence Prisma "Can't reach database" during static generation
+  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
 }
 
 export default nextConfig
