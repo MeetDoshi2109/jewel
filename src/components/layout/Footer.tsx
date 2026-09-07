@@ -1,8 +1,16 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Share2, BookMarked, Send, Mail, MapPin, Phone } from 'lucide-react'
 import NewsletterForm from './NewsletterForm'
 
 export default function Footer() {
+  const pathname = usePathname()
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
+
   return (
     <footer className="bg-[#1C1C1E] text-[#FAF6F0] mt-24">
       {/* Top section */}

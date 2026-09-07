@@ -3,12 +3,14 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/store/cart'
 import { formatPrice } from '@/lib/utils'
 
 export default function CartDrawer() {
+  const pathname = usePathname()
   const { items, isOpen, closeCart, removeItem, updateQuantity, total } = useCartStore()
 
   // Prevent body scroll when drawer is open
@@ -22,6 +24,10 @@ export default function CartDrawer() {
   }, [isOpen])
 
   const cartTotal = total()
+
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
 
   return (
     <AnimatePresence>

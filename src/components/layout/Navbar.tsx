@@ -42,6 +42,10 @@ export default function Navbar() {
     setMobileOpen(false)
   }, [pathname])
 
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
+
   const cartCount = count()
 
   return (
