@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Store, CalendarCheck, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Store, CalendarCheck, Menu, X, ExternalLink, Compass } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AdminUser { name: string; email: string; role: string }
@@ -133,6 +133,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )
           })}
         </nav>
+
+        <div className="px-4 py-3 border-t border-[#2D2D2F] space-y-1">
+          <Link
+            href="/"
+            target="_blank"
+            className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-[#8A8A8E] hover:text-[#FAF6F0] hover:bg-[#2D2D2F] transition-colors"
+          >
+            <span className="flex items-center gap-2.5">
+              <Store size={14} /> Live Boutique
+            </span>
+            <ExternalLink size={12} />
+          </Link>
+          <Link
+            href="/account/track"
+            target="_blank"
+            className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-[#8A8A8E] hover:text-[#FAF6F0] hover:bg-[#2D2D2F] transition-colors"
+          >
+            <span className="flex items-center gap-2.5">
+              <Compass size={14} /> Client Tracking
+            </span>
+            <ExternalLink size={12} />
+          </Link>
+        </div>
 
         <div className="p-4 border-t border-[#2D2D2F]">
           <div className="flex items-center gap-3 mb-3">

@@ -9,12 +9,26 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const type = searchParams.get('type') // 'online' | 'reservation'
   const status = searchParams.get('status')
-  const page = parseInt(searchParams.get('page') || '1')
-  const limit = parseInt(searchParams.get('limit') || '20')
+  const q = searchParams.get('q')?.trim()
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+  const limit = Math.max(1, parseInt(searchParams.get('limit') || '15'))
 
   const where: Record<string, unknown> = {}
-  if (type) where.type = type
-  if (status) where.status = status
+  if (type && type !== 'all') where.type = type
+  if (status && status !== 'all') where.status = status
+
+  if (q) {
+    const cleanQ = q.replace(/^#/, '')
+    where.OR = [
+      { orderNumber: { contains: cleanQ, mode: 'insensitive' } },
+      { guestName: { contains: q, mode: 'insensitive' } },
+      { guestEmail: { contains: q, mode: 'insensitive' } },
+      { guestPhone: { contains: q, mode: 'insensitive' } },
+      { trackingNumber: { contains: q, mode: 'insensitive' } },
+      { customer: { name: { contains: q, mode: 'insensitive' } } },
+      { customer: { email: { contains: q, mode: 'insensitive' } } },
+    ]
+  }
 
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
@@ -43,5 +57,10 @@ export async function GET(req: NextRequest) {
     })),
   }))
 
-  return NextResponse.json({ orders: serialized, total, page, pages: Math.ceil(total / limit) })
+  return NextResponse.json({
+    orders: serialized,
+    total,
+    page,
+    pages: Math.ceil(total / limit),
+  })
 }

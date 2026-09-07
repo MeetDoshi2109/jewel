@@ -30,7 +30,8 @@ export async function GET(req: NextRequest) {
         phone: true,
         createdAt: true,
         orders: {
-          select: { id: true, totalAmount: true, status: true, type: true },
+          select: { id: true, orderNumber: true, totalAmount: true, status: true, type: true, createdAt: true },
+          orderBy: { createdAt: 'desc' },
         },
       },
       orderBy: { createdAt: 'desc' },
