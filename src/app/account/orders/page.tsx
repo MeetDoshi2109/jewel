@@ -439,6 +439,23 @@ export default function AccountOrdersPage() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Actions Footer */}
+                  <div className="px-5 py-3 sm:px-6 bg-white border-t border-[#E8DDD0] flex flex-wrap items-center justify-between gap-3">
+                    <span className="text-[11px] text-[#8A8A8E]">
+                      Need assistance with this order?{' '}
+                      <Link href="/contact" className="text-[#C9A05B] hover:underline">
+                        Contact Atelier
+                      </Link>
+                    </span>
+                    <Link
+                      href={`/account/track?orderNumber=${order.orderNumber}`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1C1C1E] hover:bg-[#2D2D2F] text-white text-xs uppercase tracking-wider font-semibold rounded-lg transition-colors group"
+                    >
+                      <Truck size={13} className="text-[#C9A05B] group-hover:translate-x-0.5 transition-transform" />
+                      Track Order
+                    </Link>
+                  </div>
                 </div>
               )
             })}

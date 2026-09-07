@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { User, Package, Heart, LogOut, Settings } from 'lucide-react'
+import { User, Package, Heart, LogOut, Settings, Truck } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -207,9 +207,9 @@ export default function AccountPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
           {[
             { icon: Package, label: 'My Orders', href: '/account/orders', count: orders.length },
+            { icon: Truck, label: 'Track Order', href: '/account/track' },
             { icon: Heart, label: 'Wishlist', href: '/wishlist' },
-            { icon: Settings, label: 'Settings', href: '#' },
-            { icon: User, label: 'Profile', href: '#' },
+            { icon: User, label: 'Profile & Settings', href: '/account/profile' },
           ].map(({ icon: Icon, label, href, count }) => (
             <Link
               key={label}
@@ -224,7 +224,14 @@ export default function AccountPage() {
         </div>
 
         {/* Recent orders */}
-        <h2 className="font-medium text-[#1C1C1E] mb-4">Recent Orders</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-medium text-[#1C1C1E]">Recent Orders</h2>
+          {orders.length > 0 && (
+            <Link href="/account/orders" className="text-xs text-[#C9A05B] hover:underline font-medium">
+              View All ({orders.length}) →
+            </Link>
+          )}
+        </div>
         {orders.length === 0 ? (
           <div className="bg-white border border-[#E8DDD0] rounded-xl p-8 text-center">
             <Package size={32} className="text-[#E8DDD0] mx-auto mb-3" />
@@ -234,9 +241,9 @@ export default function AccountPage() {
         ) : (
           <div className="space-y-3">
             {orders.slice(0, 5).map((order) => (
-              <div key={order.id} className="bg-white border border-[#E8DDD0] rounded-xl p-4 flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+              <div key={order.id} className="bg-white border border-[#E8DDD0] rounded-xl p-4 flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <p className="text-sm font-medium text-[#1C1C1E]">#{order.orderNumber}</p>
                     <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-medium ${statusColors[order.status] || 'bg-gray-100 text-gray-600'}`}>
                       {order.status.replace(/_/g, ' ')}
@@ -251,6 +258,13 @@ export default function AccountPage() {
                     {new Date(order.createdAt).toLocaleDateString('en-IN')} · {formatPrice(order.totalAmount)}
                   </p>
                 </div>
+                <Link
+                  href={`/account/track?orderNumber=${order.orderNumber}`}
+                  className="px-3 py-1.5 rounded-lg border border-[#E8DDD0] hover:border-[#C9A05B] text-xs font-medium text-[#1C1C1E] hover:text-[#C9A05B] transition-colors shrink-0 flex items-center gap-1.5"
+                >
+                  <Truck size={12} className="text-[#C9A05B]" />
+                  Track
+                </Link>
               </div>
             ))}
           </div>
