@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { ArrowUpRight } from 'lucide-react'
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
 import { useRef, useState } from 'react'
-import { CATEGORIES } from '@/lib/utils'
+import { CATEGORIES, cn } from '@/lib/utils'
 
 // ─────────────────────────────────────────────────────────────────
 // All images: Unsplash License — free for commercial use
@@ -55,16 +55,16 @@ const categoryImages: Record<string, { src: string; hover: string; accent: strin
   },
 }
 
-/* Layout config: first card is hero-tall, rest are uniform */
+/* Layout config: first card is hero-tall, bangles spans 2 cols, rest are uniform */
 const LAYOUTS = [
-  { colSpan: 'lg:col-span-2', rowSpan: 'row-span-2', aspect: 'aspect-[4/5]' },
-  { colSpan: '',               rowSpan: '',            aspect: 'aspect-[3/4]' },
-  { colSpan: '',               rowSpan: '',            aspect: 'aspect-[3/4]' },
-  { colSpan: 'lg:col-span-2', rowSpan: '',            aspect: 'aspect-[16/7]' },
-  { colSpan: '',               rowSpan: '',            aspect: 'aspect-[3/4]' },
-  { colSpan: '',               rowSpan: '',            aspect: 'aspect-[3/4]' },
-  { colSpan: '',               rowSpan: '',            aspect: 'aspect-[3/4]' },
-  { colSpan: '',               rowSpan: '',            aspect: 'aspect-[3/4]' },
+  { colSpan: 'col-span-2 lg:col-span-2', rowSpan: 'lg:row-span-2', aspect: 'aspect-[4/3] sm:aspect-[4/5]' },
+  { colSpan: '',                         rowSpan: '',               aspect: 'aspect-[3/4]' },
+  { colSpan: '',                         rowSpan: '',               aspect: 'aspect-[3/4]' },
+  { colSpan: 'col-span-2 lg:col-span-2', rowSpan: '',               aspect: 'aspect-[16/7] lg:aspect-auto' },
+  { colSpan: '',                         rowSpan: '',               aspect: 'aspect-[3/4]' },
+  { colSpan: '',                         rowSpan: '',               aspect: 'aspect-[3/4]' },
+  { colSpan: '',                         rowSpan: '',               aspect: 'aspect-[3/4]' },
+  { colSpan: '',                         rowSpan: '',               aspect: 'aspect-[3/4]' },
 ]
 
 function CategoryCard({
@@ -100,16 +100,19 @@ function CategoryCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.65, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
-      className={`${layout.colSpan} ${layout.rowSpan}`}
+      className={cn(layout.colSpan, layout.rowSpan, 'w-full min-w-0')}
     >
       <Link
         href={`/collections/${category.value}`}
         data-cursor="Shop"
-        className="group block h-full"
+        className="group block h-full w-full min-w-0"
       >
         <motion.div
           ref={cardRef}
-          className={`relative ${layout.aspect} h-full overflow-hidden rounded-2xl cursor-none`}
+          className={cn(
+            'relative w-full max-w-full h-full overflow-hidden rounded-2xl cursor-none',
+            layout.aspect
+          )}
           style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: 'preserve-3d', transformPerspective: 900 }}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
