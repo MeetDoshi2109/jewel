@@ -4,98 +4,158 @@ import { useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowUpRight, Sparkles } from 'lucide-react'
-import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from 'framer-motion'
-import { CATEGORIES, cn } from '@/lib/utils'
+import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
-interface CategoryMeta {
+interface CollectionItem {
+  id: string
+  num: string
+  roman: string
+  title: string
+  subtitle: string
+  description: string
+  href: string
   src: string
   hover: string
   accent: string
-  tagline: string
-  tier: 'signature' | 'tradition'
+  hallmark: string
 }
 
-const CATEGORY_META: Record<string, CategoryMeta> = {
-  rings: {
+const PRIMARY_COLLECTIONS: CollectionItem[] = [
+  {
+    id: 'rings',
+    num: '01',
+    roman: 'I',
+    title: 'Solitaires & Bands',
+    subtitle: 'The Ring Atelier',
+    description: 'Conflict-free diamonds and hand-carved 18k gold bands engineered for eternity.',
+    href: '/collections/rings',
     src: '/images/2ring.jpg',
     hover: '/images/4.jpg',
     accent: '#C9A05B',
-    tagline: 'Solitaires, Bands & Cocktail Rings',
-    tier: 'signature',
+    hallmark: '18K SOLID GOLD · VVS1 CLARITY',
   },
-  necklaces: {
+  {
+    id: 'necklaces',
+    num: '02',
+    roman: 'II',
+    title: 'Chokers & Heirlooms',
+    subtitle: 'High Jewellery Chains',
+    description: 'Regal layered pendants and delicate collar chains draped in Jaipur heritage.',
+    href: '/collections/necklaces',
     src: '/images/necklace.jpg',
     hover: '/images/3.jpg',
     accent: '#B76E79',
-    tagline: 'Chokers, Chains & Majestic Pendants',
-    tier: 'signature',
+    hallmark: 'BESPOKE ARTISAN CASTING',
   },
-  earrings: {
+  {
+    id: 'earrings',
+    num: '03',
+    roman: 'III',
+    title: 'Earrings & Drops',
+    subtitle: 'Chandbalis & Studs',
+    description: 'Weightless architectural drops and diamond-pavé everyday solitaires.',
+    href: '/collections/earrings',
     src: '/images/5.jpg',
     hover: '/images/6.jpg',
     accent: '#C9A05B',
-    tagline: 'Studs, Drops, Jhumkas & Chandbalis',
-    tier: 'signature',
+    hallmark: 'HAND-SET PRONGS',
   },
-  bangles: {
+  {
+    id: 'bangles',
+    num: '04',
+    roman: 'IV',
+    title: 'Bangles & Cuffs',
+    subtitle: 'Sculptural Wristwear',
+    description: 'Articulated hinged kadas and eternal diamond tennis bracelets.',
+    href: '/collections/bangles',
     src: '/images/6.jpg',
     hover: '/images/7.jpg',
     accent: '#A8823A',
-    tagline: 'Kadas, Cuffs & Diamond Tennis Bangles',
-    tier: 'signature',
+    hallmark: 'MICRO-PAVÉ DIAMOND SET',
   },
-  mangalsutra: {
+]
+
+const SECONDARY_COLLECTIONS: CollectionItem[] = [
+  {
+    id: 'mangalsutra',
+    num: '05',
+    roman: 'V',
+    title: 'Mangalsutra',
+    subtitle: 'Sacred Heirlooms',
+    description: 'Contemporary interpretations of auspicious sacred black beads in solid gold.',
+    href: '/collections/mangalsutra',
     src: '/images/mangalsutra.jpg',
     hover: '/images/necklace.jpg',
     accent: '#C9A05B',
-    tagline: 'Sacred Auspicious Heirlooms',
-    tier: 'tradition',
+    hallmark: 'BRIDAL SANCTUM',
   },
-  anklets: {
+  {
+    id: 'anklets',
+    num: '06',
+    roman: 'VI',
+    title: 'Payals & Anklets',
+    subtitle: 'Graceful Accents',
+    description: 'Chime-free whisper-light gold chains adorned with genuine gemstones.',
+    href: '/collections/anklets',
     src: '/images/8.jpg',
     hover: '/images/9.jpg',
     accent: '#B76E79',
-    tagline: 'Delicate Gold Payals & Charms',
-    tier: 'tradition',
+    hallmark: 'EVERYDAY WEAR',
   },
-  nosepins: {
+  {
+    id: 'nosepins',
+    num: '07',
+    roman: 'VII',
+    title: 'Nose Pins',
+    subtitle: 'Solitaire Accents',
+    description: 'Micro-diamond studs and traditional South Asian floral press pins.',
+    href: '/collections/nosepins',
     src: '/images/9.jpg',
     hover: '/images/2.webp',
     accent: '#C9A05B',
-    tagline: 'Diamond & Solid Gold Studs',
-    tier: 'tradition',
+    hallmark: 'NATURAL DIAMONDS',
   },
-  mens: {
+  {
+    id: 'mens',
+    num: '08',
+    roman: 'VIII',
+    title: "Men's Atelier",
+    subtitle: 'Sovereign Heritage',
+    description: 'Heavy curb chains, textured signet rings, and solid gold kada bangles.',
+    href: '/collections/mens',
     src: '/images/7.jpg',
     hover: '/images/8.jpg',
     accent: '#8A8A8E',
-    tagline: 'Bold Chains, Signet Rings & Kadas',
-    tier: 'tradition',
+    hallmark: 'MATTE & POLISHED DUO',
   },
-}
+]
 
-function CategoryCard({
-  category,
-  index,
+function DoubleBezelCard({
+  item,
+  aspectClass = 'aspect-[4/5]',
+  className = '',
+  isHero = false,
 }: {
-  category: typeof CATEGORIES[0]
-  index: number
+  item: CollectionItem
+  aspectClass?: string
+  className?: string
+  isHero?: boolean
 }) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const meta = CATEGORY_META[category.value] || CATEGORY_META.rings
   const [hovered, setHovered] = useState(false)
 
-  /* Per-card 3D tilt */
+  /* Fluid mouse tilt physics */
   const rawX = useMotionValue(0)
   const rawY = useMotionValue(0)
-  const tiltX = useSpring(rawX, { stiffness: 280, damping: 25 })
-  const tiltY = useSpring(rawY, { stiffness: 280, damping: 25 })
+  const tiltX = useSpring(rawX, { stiffness: 300, damping: 30 })
+  const tiltY = useSpring(rawY, { stiffness: 300, damping: 30 })
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
     const rect = cardRef.current.getBoundingClientRect()
-    rawX.set(((e.clientY - rect.top) / rect.height - 0.5) * -8)
-    rawY.set(((e.clientX - rect.left) / rect.width - 0.5) * 8)
+    rawX.set(((e.clientY - rect.top) / rect.height - 0.5) * -6)
+    rawY.set(((e.clientX - rect.left) / rect.width - 0.5) * 6)
   }
 
   const onLeave = () => {
@@ -105,182 +165,223 @@ function CategoryCard({
   }
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 35 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.55, delay: (index % 4) * 0.08, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full min-w-0"
-    >
-      <Link
-        href={`/collections/${category.value}`}
-        data-cursor="Shop"
-        className="group block w-full h-full"
-      >
-        <motion.div
-          ref={cardRef}
-          className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[#E8DDD0] shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-[#C9A05B]/40 border border-transparent"
-          style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: 'preserve-3d', transformPerspective: 900 }}
-          onMouseMove={onMove}
-          onMouseLeave={onLeave}
-          onMouseEnter={() => setHovered(true)}
-        >
-          {/* Primary piece image */}
-          <Image
-            src={meta.src}
-            alt={category.label}
-            fill
+    <div className={cn('w-full min-w-0', className)}>
+      <Link href={item.href} className="group block w-full h-full">
+        {/* Outer Machined Bezel Shell */}
+        <div className="p-2 sm:p-2.5 rounded-[2.2rem] bg-white/50 backdrop-blur-xs border border-[#E8DDD0] shadow-[0_15px_40px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_60px_rgba(201,160,91,0.12)] hover:border-[#C9A05B]/40 transition-all duration-700 h-full flex flex-col">
+          {/* Inner Concentric Core */}
+          <motion.div
+            ref={cardRef}
             className={cn(
-              'object-cover transition-all duration-700 ease-out group-hover:scale-108',
-              hovered ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+              'relative w-full h-full overflow-hidden rounded-[calc(2.2rem-0.625rem)] bg-[#1C1C1E]',
+              aspectClass
             )}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-          />
+            style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: 'preserve-3d' }}
+            onMouseMove={onMove}
+            onMouseLeave={onLeave}
+            onMouseEnter={() => setHovered(true)}
+          >
+            {/* Primary High-Jewellery Photo */}
+            <Image
+              src={item.src}
+              alt={item.title}
+              fill
+              className={cn(
+                'object-cover transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-106',
+                hovered ? 'opacity-0 scale-104' : 'opacity-100 scale-100'
+              )}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
 
-          {/* Hover cross-fade alternate editorial photo */}
-          <Image
-            src={meta.hover}
-            alt={`${category.label} lifestyle`}
-            fill
-            className={cn(
-              'object-cover absolute inset-0 transition-all duration-700 ease-out group-hover:scale-108',
-              hovered ? 'opacity-100' : 'opacity-0'
-            )}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-          />
+            {/* Hover Editorial Lifestyle Shot */}
+            <Image
+              src={item.hover}
+              alt={`${item.title} editorial`}
+              fill
+              className={cn(
+                'object-cover absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-106',
+                hovered ? 'opacity-100 scale-104' : 'opacity-0 scale-100'
+              )}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
 
-          {/* Dark cinematic vignette gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/90 via-[#1C1C1E]/30 to-black/10 transition-opacity duration-300" />
+            {/* Cinematic Scrim Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/95 via-[#1C1C1E]/35 to-black/15 pointer-events-none" />
 
-          {/* Hover radial gold glow */}
-          <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at 50% 85%, ${meta.accent}33 0%, transparent 65%)`,
-            }}
-          />
+            {/* Hover Gold Ambient Wash */}
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at 60% 80%, ${item.accent}30 0%, transparent 65%)`,
+              }}
+            />
 
-          {/* Top Header inside card: Index number & subtle pill */}
-          <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none">
-            <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-[#FAF6F0] bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              View Piece
-            </span>
-          </div>
-
-          {/* Bottom Card Details */}
-          <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex items-end justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <span
-                className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5 block"
-                style={{ color: meta.accent }}
-              >
-                {category.emoji} &nbsp;{category.label}
+            {/* Top Bar inside Card: Hallmark & Roman Numeral */}
+            <div className="absolute top-5 inset-x-5 sm:inset-x-6 flex items-center justify-between pointer-events-none">
+              <span className="text-[9px] sm:text-[10px] uppercase font-mono tracking-[0.25em] text-white/60 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                {item.hallmark}
               </span>
-              <h3 className="font-serif text-xl sm:text-2xl text-white font-medium leading-tight truncate">
-                {category.label}
-              </h3>
-              <p className="text-[11px] text-white/70 font-light mt-1 line-clamp-1">
-                {meta.tagline}
-              </p>
+              <span className="font-serif text-sm tracking-widest text-[#C9A05B] font-light">
+                {item.roman}
+              </span>
             </div>
 
-            {/* Floating Action Arrow */}
-            <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shrink-0 text-white group-hover:bg-[#C9A05B] group-hover:border-[#C9A05B] group-hover:rotate-45 transition-all duration-300 shadow-md">
-              <ArrowUpRight size={15} />
-            </div>
-          </div>
+            {/* Bottom Content Area */}
+            <div className="absolute bottom-0 inset-x-0 p-6 sm:p-7 md:p-8 flex items-end justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-[#C9A05B] font-semibold block mb-1">
+                  {item.num} · {item.subtitle}
+                </span>
+                <h3
+                  className={cn(
+                    'font-serif text-white leading-[1.05] tracking-tight truncate',
+                    isHero ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl'
+                  )}
+                >
+                  {item.title}
+                </h3>
+                <p className="text-xs text-white/70 font-light mt-1.5 line-clamp-2 max-w-md hidden sm:block">
+                  {item.description}
+                </p>
+              </div>
 
-          {/* Bottom gold accent hairline on hover */}
-          <div
-            className="absolute bottom-0 left-0 h-[3px] w-0 group-hover:w-full transition-all duration-500 ease-out"
-            style={{ background: `linear-gradient(90deg, ${meta.accent}, transparent)` }}
-          />
-        </motion.div>
+              {/* Nested Button-in-Button Island Architecture */}
+              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/25 flex items-center justify-center shrink-0 text-white group-hover:bg-[#C9A05B] group-hover:border-[#C9A05B] group-hover:rotate-45 group-hover:scale-105 transition-all duration-500 shadow-md">
+                <ArrowUpRight size={16} />
+              </div>
+            </div>
+
+            {/* Bottom Gold Hairline Sweep */}
+            <div
+              className="absolute bottom-0 left-0 h-[3px] w-0 group-hover:w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+              style={{ background: `linear-gradient(90deg, ${item.accent}, transparent)` }}
+            />
+          </motion.div>
+        </div>
       </Link>
-    </motion.div>
+    </div>
   )
 }
 
 export default function CollectionsShowcase() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
-  const [filter, setFilter] = useState<'all' | 'signature' | 'tradition'>('all')
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inView = useInView(containerRef, { once: true, margin: '-80px' })
 
-  const filteredCategories = CATEGORIES.filter((cat) => {
-    if (filter === 'all') return true
-    const meta = CATEGORY_META[cat.value]
-    return meta?.tier === filter
-  })
+  const heroItem = PRIMARY_COLLECTIONS[0] // Rings
+  const necklaceItem = PRIMARY_COLLECTIONS[1] // Necklaces
+  const earringsItem = PRIMARY_COLLECTIONS[2] // Earrings
+  const banglesItem = PRIMARY_COLLECTIONS[3] // Bangles & Bracelets
 
   return (
-    <section ref={ref} className="py-[var(--section-y)] bg-[#F2EBE0] relative overflow-hidden">
-      {/* Texture background */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none texture-engrave" aria-hidden="true" />
+    <section
+      ref={containerRef}
+      className="py-24 md:py-36 bg-[#F2EBE0] relative overflow-hidden"
+    >
+      {/* Subtle Noise / Engraving Texture */}
+      <div className="absolute inset-0 opacity-[0.035] pointer-events-none texture-engrave" aria-hidden="true" />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
-        {/* Editorial Section Header */}
+        {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 35 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-12"
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-16"
         >
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="w-8 h-[1px] bg-[#C9A05B]" />
-              <span className="text-[11px] uppercase tracking-[0.25em] text-[#C9A05B] font-semibold">
-                Haute Horlogerie & Joaillerie
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-3.5">
+              <span className="w-9 h-[1.5px] bg-[#C9A05B]" />
+              <span className="text-[11px] uppercase tracking-[0.3em] text-[#C9A05B] font-semibold">
+                Haute Joaillerie Atelier
               </span>
             </div>
-            <h2 className="font-serif text-[clamp(2.4rem,4.5vw,4.5rem)] text-[#1C1C1E] leading-[0.95] tracking-[-0.02em]">
+            <h2 className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] text-[#1C1C1E] leading-[0.94] tracking-[-0.025em]">
               Jewellery for<br />
               <em className="italic font-light">every chapter.</em>
             </h2>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center p-1 bg-white/70 backdrop-blur-md rounded-full border border-[#E8DDD0] shadow-2xs self-start sm:self-auto">
-              {[
-                { key: 'all', label: 'All Collections (8)' },
-                { key: 'signature', label: 'Signatures' },
-                { key: 'tradition', label: 'Traditions' },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setFilter(tab.key as 'all' | 'signature' | 'tradition')}
-                  className={cn(
-                    'px-4 py-2 text-xs font-semibold rounded-full transition-all duration-300',
-                    filter === tab.key
-                      ? 'bg-[#1C1C1E] text-white shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/60'
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
+          <div className="flex flex-col items-start md:items-end gap-3">
+            <p className="text-xs sm:text-sm text-[#8A8A8E] max-w-xs leading-relaxed md:text-right font-light">
+              Eight distinct ateliers, from diamond-pavé solitaires to imperial bridal heirlooms.
+            </p>
             <Link
               href="/collections"
-              className="text-xs uppercase tracking-wider font-semibold text-[#C9A05B] hover:text-[#A8823A] flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-[#1C1C1E] hover:text-[#C9A05B] transition-colors border-b border-[#1C1C1E] pb-0.5 hover:border-[#C9A05B]"
             >
-              Catalogue <ArrowUpRight size={14} />
+              <span>Explore All Ateliers</span>
+              <ArrowUpRight size={13} />
             </Link>
           </div>
         </motion.div>
 
-        {/* 4-Column Balanced Luxury Grid */}
-        <motion.div layout className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <AnimatePresence>
-            {filteredCategories.map((cat, i) => (
-              <CategoryCard key={cat.value} category={cat} index={i} />
+        {/* ─── ACT I: THE SIGNATURE ATELIER SHOWCASE ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-8 sm:mb-10"
+        >
+          {/* Monumental Hero Piece: Rings Atelier (7 Columns) */}
+          <div className="lg:col-span-7 flex">
+            <DoubleBezelCard
+              item={heroItem}
+              isHero={true}
+              aspectClass="aspect-[4/5] sm:aspect-[16/13] lg:aspect-auto lg:h-full lg:min-h-[580px]"
+              className="h-full"
+            />
+          </div>
+
+          {/* Interlocked Companion Atelier (5 Columns) */}
+          <div className="lg:col-span-5 flex flex-col gap-6 justify-between">
+            {/* Top Wide Showcase: Necklaces */}
+            <DoubleBezelCard
+              item={necklaceItem}
+              aspectClass="aspect-[16/9] sm:aspect-[16/9]"
+              className="w-full"
+            />
+
+            {/* Bottom Equal Duet: Earrings + Bangles & Bracelets */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 flex-1">
+              <DoubleBezelCard
+                item={earringsItem}
+                aspectClass="aspect-[4/5] sm:aspect-[4/5]"
+                className="w-full"
+              />
+              <DoubleBezelCard
+                item={banglesItem}
+                aspectClass="aspect-[4/5] sm:aspect-[4/5]"
+                className="w-full"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ─── ACT II: THE TRADITIONS & ACCENTS SALON (4 Curated Cards) ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.85, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex items-center justify-between mb-5 px-1">
+            <h3 className="text-xs uppercase tracking-[0.25em] font-semibold text-[#8A8A8E]">
+              Curated Heritage & Specialist Ateliers
+            </h3>
+            <span className="text-[10px] uppercase tracking-widest text-[#C9A05B] font-mono">
+              Chapters V – VIII
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+            {SECONDARY_COLLECTIONS.map((item) => (
+              <DoubleBezelCard
+                key={item.id}
+                item={item}
+                aspectClass="aspect-[4/5]"
+                className="w-full"
+              />
             ))}
-          </AnimatePresence>
+          </div>
         </motion.div>
       </div>
     </section>
