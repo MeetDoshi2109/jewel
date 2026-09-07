@@ -1,132 +1,340 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Sparkles, Gem, ShieldCheck, Award, Flame } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Scene 2 — "The Craft" — video showcase with scroll-driven callout tags
+// Craftsmanship Milestones Data (UI/UX Pro Max & Stitch Design System)
+// ─────────────────────────────────────────────────────────────────────
+interface CraftMilestone {
+  id: string
+  chapter: string
+  roman: string
+  title: string
+  subtitle: string
+  description: string
+  metric: string
+  metricLabel: string
+  badge: string
+  icon: typeof Gem
+  accent: string
+}
+
+const MILESTONES: CraftMilestone[] = [
+  {
+    id: 'alloy',
+    chapter: 'Chapter I',
+    roman: 'I',
+    title: 'The Imperial Alloy',
+    subtitle: '18K Solid Gold Formulation',
+    description:
+      'Hand-blended in our Jaipur foundry with pure copper and silver. Zero nickel, maximum skin comfort, and a rich warm glow that never oxidizes.',
+    metric: '75.0%',
+    metricLabel: 'Certified Pure Gold',
+    badge: 'BIS 750 Hallmarked',
+    icon: Flame,
+    accent: '#C9A05B',
+  },
+  {
+    id: 'solitaire',
+    chapter: 'Chapter II',
+    roman: 'II',
+    title: 'Optical Solitaires',
+    subtitle: 'Top 1% Diamond Selection',
+    description:
+      'Individually inspected under 40× magnification. Selected strictly for Triple-Excellent symmetry, optical fire, and certified VVS1 clarity.',
+    metric: '1.50ct',
+    metricLabel: 'Brilliant Round Cut',
+    badge: 'VVS1 · Triple Excellent',
+    icon: Gem,
+    accent: '#DDB96A',
+  },
+  {
+    id: 'setting',
+    chapter: 'Chapter III',
+    roman: 'III',
+    title: 'Micro-Prong Mastery',
+    subtitle: 'Hand-Carved Pavé Settings',
+    description:
+      'Master ustads with over 15 years of familial lineage sculpt microscopic claw prongs, securing each pavilion for uninterrupted light refraction.',
+    metric: '0.02mm',
+    metricLabel: 'Artisan Tolerances',
+    badge: 'Hand-Set in Atelier',
+    icon: ShieldCheck,
+    accent: '#C9A05B',
+  },
+  {
+    id: 'finish',
+    chapter: 'Chapter IV',
+    roman: 'IV',
+    title: 'Mirror Atelier Luster',
+    subtitle: 'Five-Stage Hand Buffing',
+    description:
+      'Lapped across walnut husk wheels and sub-micron diamond compound for a liquid-light specular reflection that feels like silk against the finger.',
+    metric: '5 Stages',
+    metricLabel: 'Walnut & Diamond Buff',
+    badge: 'Lifetime Guarantee',
+    icon: Award,
+    accent: '#A8823A',
+  },
+]
+
+// ─────────────────────────────────────────────────────────────────────
+// Scene 2 — "Crafted to Perfection" Haute Joaillerie Pinned Stage
 // ─────────────────────────────────────────────────────────────────────
 function Scene2() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const tag1Ref      = useRef<HTMLParagraphElement>(null)
-  const tag2Ref      = useRef<HTMLParagraphElement>(null)
-  const tag3Ref      = useRef<HTMLParagraphElement>(null)
-  const tag4Ref      = useRef<HTMLParagraphElement>(null)
-  const progressRef  = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [activeStep, setActiveStep] = useState(0)
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReduced || !containerRef.current) return
+    if (!containerRef.current) return
+
+    const video = videoRef.current
+    let videoDuration = 0
+
+    const updateDuration = () => {
+      if (video && video.duration && !isNaN(video.duration)) {
+        videoDuration = video.duration
+      }
+    }
+
+    if (video) {
+      if (video.readyState >= 1) {
+        updateDuration()
+      } else {
+        video.addEventListener('loadedmetadata', updateDuration)
+      }
+    }
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top top',
-          end: '+=260%',
-          scrub: 1.2,
-          pin: true,
-          anticipatePin: 1,
-          onUpdate: (self) => {
-            if (progressRef.current) {
-              progressRef.current.style.width = `${self.progress * 100}%`
-            }
-          },
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: 'top top',
+        end: '+=320%',
+        pin: true,
+        anticipatePin: 1,
+        scrub: 1.2,
+        onUpdate: (self) => {
+          const p = self.progress
+          setScrollProgress(p)
+
+          // Synchronize rotating gold ring video directly with scroll position
+          if (!prefersReduced && video && videoDuration > 0) {
+            video.currentTime = p * (videoDuration - 0.05)
+          }
+
+          // Compute active milestone (0 to 3)
+          const stepIndex = Math.min(
+            MILESTONES.length - 1,
+            Math.floor(p * MILESTONES.length)
+          )
+          setActiveStep(stepIndex)
         },
       })
-
-      // Callout tags materialise at scroll milestones
-      tl.fromTo(tag1Ref.current, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.25 }, 0.08)
-      tl.fromTo(tag2Ref.current, { opacity: 0, x:  40 }, { opacity: 1, x: 0, duration: 0.25 }, 0.30)
-      tl.fromTo(tag3Ref.current, { opacity: 0, y:  20 }, { opacity: 1, y: 0, duration: 0.25 }, 0.55)
-      tl.fromTo(tag4Ref.current, { opacity: 0, y:  20 }, { opacity: 1, y: 0, duration: 0.25 }, 0.78)
     }, containerRef)
 
-    return () => ctx.revert()
+    return () => {
+      if (video) {
+        video.removeEventListener('loadedmetadata', updateDuration)
+      }
+      ctx.revert()
+    }
   }, [])
+
+  const currentMilestone = MILESTONES[activeStep]
 
   return (
     <div
       ref={containerRef}
-      className="relative h-screen bg-white overflow-hidden flex items-center justify-center"
+      className="relative min-h-[100dvh] h-screen bg-[#0D0D0F] text-[#FAF6F0] overflow-hidden flex items-center justify-center select-none"
     >
-      {/* Fine texture */}
-      <div className="absolute inset-0 opacity-[0.025] texture-engrave pointer-events-none" aria-hidden="true" />
-
-      {/* Radial gold glow */}
+      {/* ── Background Atmospheric Layers ── */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 55% 55% at 50% 50%, rgba(201,160,91,0.08) 0%, transparent 70%)' }}
+        className="absolute inset-0 opacity-[0.035] texture-engrave pointer-events-none"
         aria-hidden="true"
       />
 
-      {/* ── Video — centred, contained ── */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center" aria-label="Gold ring rotating showcase">
-        <video
-          src="/gold-ring-rotate.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="h-full w-full object-contain"
-          style={{ maxHeight: '80vh', maxWidth: '80vw' }}
-        />
-      </div>
+      {/* Ambient Gold Radial Core Glow */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-all duration-1000"
+        style={{
+          background: `radial-gradient(ellipse 65% 65% at 50% 50%, rgba(201,160,91,0.18) 0%, rgba(201,160,91,0.04) 45%, transparent 75%)`,
+        }}
+        aria-hidden="true"
+      />
 
-      {/* ── Header ── */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 text-center z-20 pointer-events-none">
-        <p className="eyebrow text-[#C9A05B] mb-2">The Craft</p>
-        <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] text-[#1C1C1E] leading-tight">
-          Crafted to perfection.
-        </h2>
-        <p className="text-xs text-[#8A8A8E] tracking-widest mt-2">↓ Scroll to explore</p>
-      </div>
-
-      {/* ── Floating callout tags ── */}
-      <p ref={tag1Ref} className="absolute left-6 md:left-14 top-[38%] opacity-0 z-20 pointer-events-none">
-        <span className="inline-flex items-center gap-2 bg-white/85 backdrop-blur-sm border border-[#E8DDD0] rounded-full px-4 py-2 text-[10px] tracking-[0.18em] uppercase text-[#C9A05B] shadow-sm">
-          ✦ Handcrafted in 18k Gold
-        </span>
-      </p>
-      <p ref={tag2Ref} className="absolute right-6 md:right-14 top-[48%] opacity-0 z-20 pointer-events-none text-right">
-        <span className="inline-flex items-center gap-2 bg-white/85 backdrop-blur-sm border border-[#E8DDD0] rounded-full px-4 py-2 text-[10px] tracking-[0.18em] uppercase text-[#C9A05B] shadow-sm">
-          Conflict-Free Stones ✦
-        </span>
-      </p>
-      <p ref={tag3Ref} className="absolute left-6 md:left-14 bottom-[32%] opacity-0 z-20 pointer-events-none">
-        <span className="inline-flex items-center gap-2 bg-[#1C1C1E]/85 backdrop-blur-sm rounded-full px-4 py-2 text-[10px] tracking-[0.18em] uppercase text-[#C9A05B]">
-          ✦ 15+ Years of Craft
-        </span>
-      </p>
-      <p ref={tag4Ref} className="absolute right-6 md:right-14 bottom-[25%] opacity-0 z-20 pointer-events-none text-right">
-        <span className="inline-flex items-center gap-2 bg-[#1C1C1E]/85 backdrop-blur-sm rounded-full px-4 py-2 text-[10px] tracking-[0.18em] uppercase text-[#C9A05B]">
-          Jaipur Atelier ✦
-        </span>
-      </p>
-
-      {/* ── Gold progress bar ── */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#E8DDD0] z-20">
-        <div ref={progressRef} className="h-full bg-[#C9A05B] w-0" style={{ transition: 'none' }} />
-      </div>
-
-      {/* ── Scroll cue ── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 pointer-events-none">
-        <div className="w-5 h-8 rounded-full border-2 border-[#C9A05B]/40 flex items-start justify-center pt-1.5">
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-1 h-1.5 rounded-full bg-[#C9A05B]"
-          />
+      {/* ── Top Header Bar ── */}
+      <div className="absolute top-8 sm:top-10 inset-x-6 sm:inset-x-12 flex items-center justify-between z-30 pointer-events-none">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-6 h-[1px] bg-[#C9A05B]" />
+            <span className="text-[10px] uppercase font-mono tracking-[0.3em] text-[#C9A05B]">
+              Haute Atelier Engineering
+            </span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-4xl text-white tracking-tight leading-tight">
+            Crafted to <em className="italic font-light text-[#E8DDD0]">perfection.</em>
+          </h2>
         </div>
+
+        {/* Live Scrub Rotation HUD */}
+        <div className="hidden md:flex flex-col items-end text-right">
+          <span className="text-[10px] font-mono tracking-widest text-[#C9A05B] uppercase">
+            SOLITAIRE 360° ARCHIVE
+          </span>
+          <span className="text-xs font-mono text-white/60 mt-0.5 tabular-nums">
+            ANGLE: {Math.round(scrollProgress * 360)}° · BIS 750
+          </span>
+        </div>
+      </div>
+
+      {/* ── Centerpiece Rotating Video Stage (Double-Bezel Architecture) ── */}
+      <div className="relative z-10 w-full max-w-4xl px-4 flex items-center justify-center">
+        {/* Outer Halo Disc */}
+        <div className="relative w-[300px] h-[300px] sm:w-[420px] sm:h-[420px] md:w-[500px] md:h-[500px] rounded-full p-2 sm:p-3 bg-white/[0.03] border border-white/10 backdrop-blur-2xl shadow-[0_0_80px_rgba(201,160,91,0.15)] flex items-center justify-center">
+          {/* Inner Concentric Lens Ring */}
+          <div className="relative w-full h-full rounded-full overflow-hidden border border-[#C9A05B]/20 flex items-center justify-center bg-black/40">
+            <video
+              ref={videoRef}
+              src="/gold-ring-rotate.mp4"
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-contain scale-110 pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+              aria-label="3D Rotating Solitaire Ring"
+            />
+
+            {/* Subtle Circular Reflection Highlights */}
+            <div className="absolute inset-0 rounded-full border border-white/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Left Side: Interactive Milestone Rail (Roman Beads) ── */}
+      <div className="absolute left-6 sm:left-10 md:left-14 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-5">
+        <div className="w-[1px] h-12 bg-gradient-to-b from-transparent to-[#C9A05B]/40 mx-auto" />
+        {MILESTONES.map((m, idx) => {
+          const isPassed = idx <= activeStep
+          const isCurrent = idx === activeStep
+          return (
+            <div key={m.id} className="flex items-center gap-3 group">
+              <div
+                className={cn(
+                  'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-serif font-semibold transition-all duration-500 border',
+                  isCurrent
+                    ? 'bg-[#C9A05B] text-[#0D0D0F] border-[#C9A05B] shadow-[0_0_20px_rgba(201,160,91,0.6)] scale-110'
+                    : isPassed
+                    ? 'bg-white/10 text-[#C9A05B] border-[#C9A05B]/50'
+                    : 'bg-white/5 text-white/30 border-white/10'
+                )}
+              >
+                {m.roman}
+              </div>
+              <span
+                className={cn(
+                  'text-[10px] uppercase tracking-[0.2em] font-mono transition-opacity duration-300 hidden lg:inline-block',
+                  isCurrent ? 'text-white opacity-100 font-semibold' : 'text-white/40 opacity-0'
+                )}
+              >
+                {m.chapter}
+              </span>
+            </div>
+          )
+        })}
+        <div className="w-[1px] h-12 bg-gradient-to-t from-transparent to-[#C9A05B]/40 mx-auto" />
+      </div>
+
+      {/* ── Right Side / Bottom: Dynamic Ethereal Milestone Card ── */}
+      <div className="absolute right-4 sm:right-8 md:right-14 bottom-8 sm:bottom-12 md:top-1/2 md:-translate-y-1/2 md:bottom-auto z-30 max-w-sm sm:max-w-md w-[calc(100%-2rem)] sm:w-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentMilestone.id}
+            initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -20, filter: 'blur(8px)' }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Outer Machined Glass Bezel */}
+            <div className="p-2 sm:p-2.5 rounded-3xl bg-white/[0.04] border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
+              {/* Inner Concentric Core */}
+              <div className="p-5 sm:p-6 rounded-2xl bg-black/60 border border-white/10 relative overflow-hidden">
+                {/* Micro Ambient Glow */}
+                <div
+                  className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full blur-2xl pointer-events-none opacity-40"
+                  style={{ background: currentMilestone.accent }}
+                />
+
+                {/* Chapter & Badge */}
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <currentMilestone.icon size={14} className="text-[#C9A05B]" />
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-mono text-[#C9A05B]">
+                      {currentMilestone.chapter}
+                    </span>
+                  </div>
+                  <span className="text-[9px] uppercase font-mono tracking-wider text-white/70 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
+                    {currentMilestone.badge}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-serif text-xl sm:text-2xl text-white font-medium leading-tight">
+                  {currentMilestone.title}
+                </h3>
+                <p className="text-[11px] text-[#C9A05B] font-medium tracking-wide mt-0.5">
+                  {currentMilestone.subtitle}
+                </p>
+
+                {/* Prose */}
+                <p className="text-xs text-white/75 font-light leading-relaxed mt-3">
+                  {currentMilestone.description}
+                </p>
+
+                {/* Metric Strip */}
+                <div className="mt-4 pt-3.5 border-t border-white/10 flex items-center justify-between">
+                  <div>
+                    <span className="text-base sm:text-lg font-serif font-bold text-white tracking-tight">
+                      {currentMilestone.metric}
+                    </span>
+                    <span className="text-[10px] text-white/50 block font-light">
+                      {currentMilestone.metricLabel}
+                    </span>
+                  </div>
+
+                  <Link
+                    href="/about"
+                    className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#C9A05B] hover:text-white transition-colors"
+                  >
+                    <span>Our Atelier</span>
+                    <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* ── Bottom Ambient Progress Bar ── */}
+      <div className="absolute bottom-0 inset-x-0 h-[2px] bg-white/10 z-30">
+        <div
+          className="h-full bg-gradient-to-r from-[#C9A05B] via-[#DDB96A] to-[#C9A05B] transition-none"
+          style={{ width: `${scrollProgress * 100}%` }}
+        />
       </div>
     </div>
   )
@@ -143,11 +351,11 @@ interface CollectionCard {
 }
 
 const SCENE3_CARDS: CollectionCard[] = [
-  { category: 'rings',     label: 'Rings',      image: '/images/2ring.jpg',      count: '18 pieces' },
-  { category: 'necklaces', label: 'Necklaces',  image: '/images/necklace.jpg',   count: '18 pieces' },
-  { category: 'earrings',  label: 'Earrings',   image: '/images/5.jpg',          count: '18 pieces' },
-  { category: 'bangles',   label: 'Bangles',    image: '/images/6.jpg',          count: '15 pieces' },
-  { category: 'mens',      label: "Men's",      image: '/images/7.jpg',          count: '9 pieces'  },
+  { category: 'rings', label: 'Rings', image: '/images/2ring.jpg', count: '18 pieces' },
+  { category: 'necklaces', label: 'Necklaces', image: '/images/necklace.jpg', count: '18 pieces' },
+  { category: 'earrings', label: 'Earrings', image: '/images/5.jpg', count: '18 pieces' },
+  { category: 'bangles', label: 'Bangles', image: '/images/6.jpg', count: '15 pieces' },
+  { category: 'mens', label: "Men's", image: '/images/7.jpg', count: '9 pieces' },
 ]
 
 function TiltCard({ card, index }: { card: CollectionCard; index: number }) {
@@ -156,8 +364,8 @@ function TiltCard({ card, index }: { card: CollectionCard; index: number }) {
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return
     const r = ref.current.getBoundingClientRect()
-    const x = ((e.clientX - r.left) / r.width  - 0.5) * 2
-    const y = ((e.clientY - r.top)  / r.height - 0.5) * 2
+    const x = ((e.clientX - r.left) / r.width - 0.5) * 2
+    const y = ((e.clientY - r.top) / r.height - 0.5) * 2
     ref.current.style.transform = `perspective(600px) rotateX(${-y * 7}deg) rotateY(${x * 7}deg) scale(1.02)`
   }
   const onLeave = () => {
@@ -176,30 +384,34 @@ function TiltCard({ card, index }: { card: CollectionCard; index: number }) {
       <Link href={`/collections/${card.category}`} data-cursor="Shop">
         <div
           ref={ref}
-          className="group relative aspect-[3/4] rounded-2xl overflow-hidden"
-          style={{ transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)', transformStyle: 'preserve-3d' }}
+          className="group relative aspect-[3/4] rounded-2xl overflow-hidden p-1.5 bg-white/40 border border-[#E8DDD0] shadow-sm hover:border-[#C9A05B]/50 transition-all duration-500"
+          style={{ transformStyle: 'preserve-3d' }}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
         >
-          <Image
-            src={card.image}
-            alt={card.label}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-            sizes="288px"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/75 via-transparent to-transparent" />
+          <div className="relative w-full h-full rounded-[calc(1rem-0.25rem)] overflow-hidden">
+            <Image
+              src={card.image}
+              alt={card.label}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-106"
+              sizes="288px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E]/85 via-transparent to-transparent" />
 
-          {/* Gold shimmer on hover */}
-          <div className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-500"
-            style={{ background: 'linear-gradient(90deg, #C9A05B, transparent)' }} />
+            {/* Gold shimmer on hover */}
+            <div
+              className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-500"
+              style={{ background: 'linear-gradient(90deg, #C9A05B, transparent)' }}
+            />
 
-          <div className="absolute bottom-0 left-0 right-0 p-5">
-            <p className="font-serif text-xl text-white leading-tight">{card.label}</p>
-            <p className="text-xs text-white/55 tracking-widest mt-1">{card.count}</p>
-            <div className="flex items-center gap-1.5 mt-2">
-              <span className="text-[10px] text-white/65 uppercase tracking-widest">Shop</span>
-              <ArrowRight size={10} className="text-[#C9A05B] group-hover:translate-x-1.5 transition-transform" />
+            <div className="absolute bottom-0 left-0 right-0 p-5">
+              <p className="font-serif text-xl text-white leading-tight">{card.label}</p>
+              <p className="text-xs text-white/60 tracking-widest mt-1">{card.count}</p>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="text-[10px] text-white/70 uppercase tracking-widest">Shop</span>
+                <ArrowRight size={10} className="text-[#C9A05B] group-hover:translate-x-1.5 transition-transform" />
+              </div>
             </div>
           </div>
         </div>
@@ -209,7 +421,7 @@ function TiltCard({ card, index }: { card: CollectionCard; index: number }) {
 }
 
 function Scene3() {
-  const trackRef     = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -239,7 +451,10 @@ function Scene3() {
   }, [])
 
   return (
-    <div ref={containerRef} className="overflow-hidden bg-[#F2EBE0] py-20 md:py-0 md:h-screen md:flex md:items-center">
+    <div
+      ref={containerRef}
+      className="overflow-hidden bg-[#F2EBE0] py-20 md:py-0 md:h-screen md:flex md:items-center"
+    >
       <div className="px-4 sm:px-8 lg:px-16 w-full">
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-3">
@@ -274,7 +489,7 @@ const CRAFT_LINES = [
 ]
 
 function Scene4() {
-  const imageRef     = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -282,14 +497,16 @@ function Scene4() {
     if (prefersReduced || !containerRef.current) return
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(imageRef.current,
+      gsap.fromTo(
+        imageRef.current,
         { scale: 1.14, opacity: 0 },
         {
-          scale: 1, opacity: 1,
+          scale: 1,
+          opacity: 1,
           scrollTrigger: {
             trigger: containerRef.current,
             start: 'top 80%',
-            end:   'top 20%',
+            end: 'top 20%',
             scrub: 1,
           },
         }
@@ -325,7 +542,7 @@ function Scene4() {
           <div className="space-y-1">
             {CRAFT_LINES.map((line, i) => (
               <motion.p
-                key={i}
+                key={line}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
